@@ -3,110 +3,152 @@ using UnityEngine;
 namespace WorldGeneration
 {
     /// <summary>
-    /// Fügt Rampen ein wo Höhenunterschiede von 1 existieren.
-    /// Arbeitet auf der fertigen Matrix und ersetzt Top-Tiles durch Rampen.
+    /// Fügt Rampen bei Höhenunterschieden im Ground hinzu.
     /// </summary>
     public class RampPass : GeneratorPassBase
     {
-        [Header("Ramp Settings")]
-        [Tooltip("Nur Ground-Layer oder auch Plattformen?")]
-        public bool applyToGround = true;
-        public bool applyToPlatforms = true;
-        
+        [Header("Ramp Chance")]
+        [Range(0f, 1f)]
+        public float rampChance = 0.7f;
+
         [Header("Detection")]
-        [Tooltip("Nur bei Höhendifferenz von genau 1 Rampen setzen")]
         public bool onlyForSingleSteps = true;
-        
+        public int maxHeightDiff = 2;
+
         public override ChunkData Execute(ChunkData chunk, GenerationContext context)
         {
-            // Surface Heights müssen existieren
             if (chunk.metadata.surfaceHeights == null)
                 return chunk;
-            
-            for (int x = 0; x < chunk.width; x++)
-            {
-                int currentHeight = chunk.metadata.surfaceHeights[x];
-                if (currentHeight < 0) continue;
-                
-                // Vorherige Höhe holen
-                int previousHeight = GetPreviousHeight(chunk, context, x);
-                if (previousHeight < 0) continue;
-                
-                int heightDiff = currentHeight - previousHeight;
-                
-                // Nur bei Höhendifferenz von 1 (oder -1)
-                if (onlyForSingleSteps && Mathf.Abs(heightDiff) != 1)
-                    continue;
-                
-                // Prüfen ob es kein Gap ist
-                TileData currentTile = chunk[x, currentHeight - 1];
-                if (currentTile.type == TileType.Gap || currentTile.type == TileType.Air)
-                    continue;
-                
-                // Layer-Filter
-                if (!ShouldApplyToLayer(currentTile.layer))
-                    continue;
-                
-                // Rampe setzen
-                if (heightDiff == 1)
-                {
-                    // Aufwärts: Rampe an previousHeight setzen
-                    SetRamp(chunk, x, previousHeight, true, currentTile.layer);
-                }
-                else if (heightDiff == -1)
-                {
-                    // Abwärts: Rampe an currentHeight setzen
-                    SetRamp(chunk, x, currentHeight, false, currentTile.layer);
-                }
-            }
-            
+
+            ProcessGroundRamps(chunk, context);
             return chunk;
         }
-        
-        int GetPreviousHeight(ChunkData chunk, GenerationContext context, int localX)
+
+        void ProcessGroundRamps(ChunkData chunk, GenerationContext context)
         {
-            // Vorherige Spalte im selben Chunk
-            if (localX > 0)
+            int[] heights = chunk.metadata.surfaceHeights;
+
+            for (int x = 0; x < chunk.width; x++)
             {
-                return chunk.metadata.surfaceHeights[localX - 1];
+                int curr = heights[x];
+                if (curr < 0) continue;
+
+                int prev = (x > 0) ? heights[x - 1] : GetLeftNeighborHeight(context);
+                if (prev < 0) continue;
+
+                int diff = curr - prev;
+                if (!IsValidHeightDiff(diff)) continue;
+                if (Random.value > rampChance) continue;
+
+                // Gap check
+                if (IsGapAt(chunk, x, Mathf.Min(curr, prev) - 1)) continue;
+
+                // Rampe wird ÜBER dem niedrigeren Block HINZUGEFÜGT (nicht ersetzt)
+                // Aufwärts: prev ist niedriger → Rampe bei x-1, Y = prev (auf dem niedrigeren Block)
+                // Abwärts: curr ist niedriger → Rampe bei x, Y = curr (auf dem niedrigeren Block)
+                
+                if (diff > 0)
+                {
+                    // AUFWÄRTS: Ground steigt von links nach rechts
+                    // UpRamp (/) kommt auf den NIEDRIGEREN Block (links, bei x-1)
+                    int rampX = x - 1;
+                    int rampY = prev; // Höhe des niedrigeren Blocks
+                    if (rampX >= 0)
+                        TryPlaceRamp(chunk, rampX, rampY, true);
+                }
+                else
+                {
+                    // ABWÄRTS: Ground fällt von links nach rechts  
+                    // DownRamp (\) kommt auf den NIEDRIGEREN Block (rechts, bei x)
+                    int rampX = x;
+                    int rampY = curr; // Höhe des niedrigeren Blocks
+                    TryPlaceRamp(chunk, rampX, rampY, false);
+                }
             }
-            
-            // Linker Nachbar-Chunk
+        }
+
+        int GetLeftNeighborHeight(GenerationContext context)
+        {
             if (context.leftNeighbor != null && context.leftNeighbor.metadata.isComplete)
-            {
                 return context.leftNeighbor.metadata.rightEdgeHeight;
-            }
-            
             return -1;
         }
-        
-        void SetRamp(ChunkData chunk, int x, int y, bool up, TileLayer layer)
+
+        void TryPlaceRamp(ChunkData chunk, int x, int y, bool isUpRamp)
         {
             if (!chunk.IsInBounds(x, y)) return;
-            
-            TileData ramp = TileData.Ramp(up, layer);
+
+            // Position muss leer sein
+            TileData existing = chunk[x, y];
+            if (!existing.IsEmpty && existing.type != TileType.Air) return;
+
+            // REGEL 1: Mindestens ein horizontaler Nachbar frei
+            if (!HasFreeNeighbor(chunk, x, y)) return;
+
+            // REGEL 2: Keine gegenläufige Rampe daneben (keine Spitzen)
+            if (HasOpposingRampNeighbor(chunk, x, y, isUpRamp)) return;
+
+            // Rampe setzen
+            TileData ramp = TileData.Ramp(isUpRamp, TileLayer.Ground);
             ramp.heightLevel = y;
             ramp.flags |= TileFlags.EdgeTop;
-            
             chunk[x, y] = ramp;
         }
-        
-        bool ShouldApplyToLayer(TileLayer layer)
+
+        bool HasFreeNeighbor(ChunkData chunk, int x, int y)
         {
-            switch (layer)
+            if (x <= 0 || x >= chunk.width - 1) return true;
+
+            TileData left = chunk[x - 1, y];
+            if (left.IsEmpty || left.type == TileType.Air) return true;
+
+            TileData right = chunk[x + 1, y];
+            if (right.IsEmpty || right.type == TileType.Air) return true;
+
+            return false;
+        }
+
+        bool HasOpposingRampNeighbor(ChunkData chunk, int x, int y, bool isUpRamp)
+        {
+            if (x > 0)
             {
-                case TileLayer.Ground:
-                    return applyToGround;
-                case TileLayer.Platform:
-                    return applyToPlatforms;
-                default:
-                    return true;
+                TileData left = chunk[x - 1, y];
+                if (left.IsRamp)
+                {
+                    bool leftIsUp = left.type == TileType.RampUp;
+                    if (isUpRamp && !leftIsUp) return true;
+                    if (!isUpRamp && leftIsUp) return true;
+                }
             }
+
+            if (x < chunk.width - 1)
+            {
+                TileData right = chunk[x + 1, y];
+                if (right.IsRamp)
+                {
+                    bool rightIsUp = right.type == TileType.RampUp;
+                    if (isUpRamp && !rightIsUp) return true;
+                    if (!isUpRamp && rightIsUp) return true;
+                }
+            }
+
+            return false;
         }
-        
-        void Reset()
+
+        bool IsValidHeightDiff(int heightDiff)
         {
-            passName = "Ramp Pass";
+            if (heightDiff == 0) return false;
+            if (onlyForSingleSteps) return Mathf.Abs(heightDiff) == 1;
+            return Mathf.Abs(heightDiff) <= maxHeightDiff;
         }
+
+        bool IsGapAt(ChunkData chunk, int x, int y)
+        {
+            if (!chunk.IsInBounds(x, y)) return true;
+            TileData tile = chunk[x, y];
+            return tile.type == TileType.Gap || tile.type == TileType.Air;
+        }
+
+        void Reset() => passName = "Ramp Pass";
     }
 }

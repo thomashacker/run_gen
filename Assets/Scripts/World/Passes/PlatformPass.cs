@@ -54,8 +54,12 @@ namespace WorldGeneration
         public List<PlatformLayer> layers = new List<PlatformLayer>();
         
         [Header("Ground Interaction")]
-        [Tooltip("Minimaler Abstand zum Boden")]
-        public int minDistanceToGround = 2;
+        [Tooltip("Minimaler Abstand zum Boden (Spieler muss durchpassen!)")]
+        public int minDistanceToGround = 3;
+        [Tooltip("Wie viele Spalten vorausschauen für Ground-Höhe (verhindert zu enge Stellen)")]
+        public int groundLookAhead = 3;
+        [Tooltip("Wie viele Spalten zurückschauen")]
+        public int groundLookBehind = 1;
         
         public override void Initialize(GenerationContext context)
         {
@@ -110,20 +114,30 @@ namespace WorldGeneration
                 return;
             }
             
+            // WICHTIG: Maximale Ground-Höhe im Bereich (Look-Ahead + Look-Behind)
+            // Verhindert zu enge Stellen wo der Spieler nicht durchpasst
+            int maxGroundHeight = GetMaxGroundHeightInRange(chunk, localX);
+            
             // Plattform fortsetzen?
             if (layer.platformRemaining > 0)
             {
-                int height = GetLayerHeight(layer, worldX, groundHeight, context, layerIndex);
+                // Noise-basierte Höhe über Ground
+                int noiseHeight = GetLayerHeight(layer, worldX, groundHeight, context, layerIndex);
+                int noisePlatformY = groundHeight + noiseHeight;
                 
-                // Ground-Kollision prüfen
-                if (height < minDistanceToGround)
-                    height = minDistanceToGround;
+                // WICHTIG: Minimale UNTERKANTE der Plattform!
+                // Thickness wird nach UNTEN gebaut, also:
+                // Unterkante = topY - thickness + 1
+                // Unterkante muss >= maxGroundHeight + minDistanceToGround sein
+                int minBottomY = maxGroundHeight + minDistanceToGround;
+                int minTopY = minBottomY + layer.currentThickness - 1;
                 
-                int platformY = groundHeight + height;
+                // Nimm das MAXIMUM von Noise-Höhe und Minimum
+                int platformY = Mathf.Max(noisePlatformY, minTopY);
                 
                 SetPlatformTiles(chunk, localX, platformY, layer.currentThickness);
                 
-                layer.lastHeight = height;
+                layer.lastHeight = platformY - groundHeight;
                 layer.platformRemaining--;
                 layer.isInPlatform = true;
                 return;
@@ -143,18 +157,63 @@ namespace WorldGeneration
                 layer.platformRemaining = Random.Range(layer.minLength, layer.maxLength + 1);
                 layer.currentThickness = Random.Range(layer.minThickness, layer.maxThickness + 1);
                 
-                int height = GetLayerHeight(layer, worldX, groundHeight, context, layerIndex);
-                if (height < minDistanceToGround)
-                    height = minDistanceToGround;
+                // Noise-basierte Höhe über Ground
+                int noiseHeight = GetLayerHeight(layer, worldX, groundHeight, context, layerIndex);
+                int noisePlatformY = groundHeight + noiseHeight;
                 
-                int platformY = groundHeight + height;
+                // WICHTIG: Minimale UNTERKANTE der Plattform!
+                int minBottomY = maxGroundHeight + minDistanceToGround;
+                int minTopY = minBottomY + layer.currentThickness - 1;
+                
+                // Nimm das MAXIMUM von Noise-Höhe und Minimum
+                int platformY = Mathf.Max(noisePlatformY, minTopY);
                 
                 SetPlatformTiles(chunk, localX, platformY, layer.currentThickness);
                 
-                layer.lastHeight = height;
+                layer.lastHeight = platformY - groundHeight;
                 layer.platformRemaining--;
                 layer.isInPlatform = true;
             }
+        }
+        
+        /// <summary>
+        /// Findet die maximale Ground-Höhe in einem Bereich um localX.
+        /// Verhindert zu enge Stellen zwischen Plattform und Ground.
+        /// </summary>
+        int GetMaxGroundHeightInRange(ChunkData chunk, int localX)
+        {
+            if (chunk.metadata.surfaceHeights == null)
+                return 3;
+            
+            int maxHeight = 0;
+            
+            // Look-Behind
+            for (int i = groundLookBehind; i >= 1; i--)
+            {
+                int checkX = localX - i;
+                if (checkX >= 0 && checkX < chunk.metadata.surfaceHeights.Length)
+                {
+                    maxHeight = Mathf.Max(maxHeight, chunk.metadata.surfaceHeights[checkX]);
+                }
+            }
+            
+            // Aktuelle Position
+            if (localX >= 0 && localX < chunk.metadata.surfaceHeights.Length)
+            {
+                maxHeight = Mathf.Max(maxHeight, chunk.metadata.surfaceHeights[localX]);
+            }
+            
+            // Look-Ahead
+            for (int i = 1; i <= groundLookAhead; i++)
+            {
+                int checkX = localX + i;
+                if (checkX >= 0 && checkX < chunk.metadata.surfaceHeights.Length)
+                {
+                    maxHeight = Mathf.Max(maxHeight, chunk.metadata.surfaceHeights[checkX]);
+                }
+            }
+            
+            return maxHeight;
         }
         
         void SetPlatformTiles(ChunkData chunk, int localX, int topY, int thickness)

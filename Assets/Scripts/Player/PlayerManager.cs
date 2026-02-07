@@ -34,9 +34,30 @@ public class PlayerManager : MonoBehaviour
     public float airAcceleration = 20f;
     public float airDeceleration = 20f;
 
+    [Header("Wall Jump")]
+    [Tooltip("Aktiviert Wall Jump")]
+    public bool enableWallJump = true;
+    [Tooltip("Vertikale Kraft beim Wall Jump")]
+    public float wallJumpForceY = 14f;
+    [Tooltip("Horizontale Kraft weg von der Wand")]
+    public float wallJumpForceX = 12f;
+    [Tooltip("Zeit nach Wall Jump in der Input reduziert ist (verhindert sofortiges Zurück zur Wand)")]
+    public float wallJumpInputLockTime = 0.15f;
+    [Tooltip("Coyote Time für Wall Jump (Zeit nach Verlassen der Wand)")]
+    public float wallCoyoteTime = 0.1f;
+    
+    [Header("Wall Slide (Optional)")]
+    [Tooltip("Aktiviert langsameres Fallen an der Wand")]
+    public bool enableWallSlide = true;
+    [Tooltip("Maximale Fallgeschwindigkeit an der Wand")]
+    public float wallSlideMaxSpeed = 3f;
+
     [Header("Ground Check")]
     public LayerMask groundLayer;
-    public float groundCheckRadius = 0.2f;
+    [Tooltip("Breite des Ground-Check Box (sollte etwas kleiner als Spieler sein)")]
+    public float groundCheckWidth = 0.4f;
+    [Tooltip("Wie weit nach unten gecheckt wird")]
+    public float groundCheckDistance = 0.1f;
     public Transform groundCheck;
 
     [Header("Wall Check (optional)")]
@@ -55,8 +76,16 @@ public class PlayerManager : MonoBehaviour
     private float jumpBufferTimeLeft;
     private bool isRising;           // true nach Sprung bis vy <= 0
     private bool jumpCutThisFrame;   // Space losgelassen während vy > 0
+    
+    // Wall Jump State
+    private float wallCoyoteTimeLeft;
+    private int lastWallDirection;   // -1 = links, 1 = rechts, 0 = keine
+    private float wallJumpInputLockTimeLeft;
+    private bool isWallSliding;
 
     public bool IsGrounded => isGrounded;
+    public bool IsWallSliding => isWallSliding;
+    public bool IsTouchingWall => isTouchingWallLeft || isTouchingWallRight;
 
     void Awake()
     {
@@ -88,13 +117,24 @@ public class PlayerManager : MonoBehaviour
         CheckGround();
         CheckWalls();
 
+        // Coyote Time
         coyoteTimeLeft -= Time.fixedDeltaTime;
         if (isGrounded) coyoteTimeLeft = coyoteTime;
+
+        // Wall Coyote Time
+        wallCoyoteTimeLeft -= Time.fixedDeltaTime;
+        UpdateWallState();
+        
+        // Input Lock Timer
+        if (wallJumpInputLockTimeLeft > 0f)
+            wallJumpInputLockTimeLeft -= Time.fixedDeltaTime;
 
         if (rb.linearVelocity.y <= 0f) isRising = false;
 
         HandleJumpInput();
+        HandleWallJump();
         HandleMovement();
+        HandleWallSlide();
         HandleGravity();
 
         jumpCutThisFrame = false;
@@ -102,8 +142,21 @@ public class PlayerManager : MonoBehaviour
 
     void CheckGround()
     {
-        Vector2 origin = groundCheck != null ? (Vector2)groundCheck.position : rb.position;
-        isGrounded = Physics2D.OverlapCircle(origin, groundCheckRadius, groundLayer) != null;
+        // BoxCast nach UNTEN - ignoriert Wände an der Seite
+        Vector2 origin = groundCheck != null ? (Vector2)groundCheck.position : (Vector2)playerCollider.bounds.center;
+        Vector2 boxSize = new Vector2(groundCheckWidth, 0.02f);
+        
+        // Kleine Box, castet nach unten
+        RaycastHit2D hit = Physics2D.BoxCast(
+            origin,
+            boxSize,
+            0f,
+            Vector2.down,
+            groundCheckDistance,
+            groundLayer
+        );
+        
+        isGrounded = hit.collider != null;
     }
 
     void CheckWalls()
@@ -113,21 +166,103 @@ public class PlayerManager : MonoBehaviour
         isTouchingWallLeft = Physics2D.Raycast(center, Vector2.left, b.extents.x + wallCheckDistance, groundLayer);
         isTouchingWallRight = Physics2D.Raycast(center, Vector2.right, b.extents.x + wallCheckDistance, groundLayer);
     }
+    
+    void UpdateWallState()
+    {
+        // Wall Coyote: Merken welche Wand wir zuletzt berührt haben
+        if (isTouchingWallLeft && !isGrounded)
+        {
+            lastWallDirection = -1;
+            wallCoyoteTimeLeft = wallCoyoteTime;
+        }
+        else if (isTouchingWallRight && !isGrounded)
+        {
+            lastWallDirection = 1;
+            wallCoyoteTimeLeft = wallCoyoteTime;
+        }
+        else if (wallCoyoteTimeLeft <= 0f)
+        {
+            lastWallDirection = 0;
+        }
+        
+        // Wall Sliding Check
+        isWallSliding = enableWallSlide && 
+                        !isGrounded && 
+                        (isTouchingWallLeft || isTouchingWallRight) && 
+                        rb.linearVelocity.y < 0f;
+    }
+    
+    void HandleWallJump()
+    {
+        if (!enableWallJump) return;
+        if (jumpBufferTimeLeft <= 0f) return;
+        if (isGrounded) return; // Normaler Jump hat Priorität
+        
+        // Kann Wall Jump ausführen?
+        bool canWallJump = (isTouchingWallLeft || isTouchingWallRight || wallCoyoteTimeLeft > 0f);
+        if (!canWallJump) return;
+        
+        // Welche Richtung?
+        int wallDir = 0;
+        if (isTouchingWallLeft) wallDir = -1;
+        else if (isTouchingWallRight) wallDir = 1;
+        else wallDir = lastWallDirection;
+        
+        if (wallDir == 0) return;
+        
+        // Wall Jump ausführen!
+        jumpBufferTimeLeft = 0f;
+        wallCoyoteTimeLeft = 0f;
+        
+        // Kraft weg von der Wand + nach oben
+        Vector2 jumpVelocity = new Vector2(-wallDir * wallJumpForceX, wallJumpForceY);
+        rb.linearVelocity = jumpVelocity;
+        
+        // Input Lock aktivieren (verhindert sofortiges Zurück zur Wand)
+        wallJumpInputLockTimeLeft = wallJumpInputLockTime;
+        
+        isRising = true;
+    }
+    
+    void HandleWallSlide()
+    {
+        if (!isWallSliding) return;
+        
+        // Fallgeschwindigkeit begrenzen
+        if (rb.linearVelocity.y < -wallSlideMaxSpeed)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, -wallSlideMaxSpeed);
+        }
+    }
 
     void HandleMovement()
     {
-        float targetSpeed = horizontalInput * moveSpeed;
+        // Input modifizieren wenn Wall Jump Input Lock aktiv
+        float effectiveInput = horizontalInput;
+        if (wallJumpInputLockTimeLeft > 0f)
+        {
+            // Input in Richtung der letzten Wand reduzieren
+            // Erlaubt aber Input weg von der Wand
+            float lockStrength = wallJumpInputLockTimeLeft / wallJumpInputLockTime;
+            if ((lastWallDirection < 0 && horizontalInput < 0) ||
+                (lastWallDirection > 0 && horizontalInput > 0))
+            {
+                effectiveInput *= (1f - lockStrength * 0.8f); // 80% reduziert
+            }
+        }
+        
+        float targetSpeed = effectiveInput * moveSpeed;
         float vx = rb.linearVelocity.x;
 
         if (isGrounded)
         {
-            if (horizontalInput > 0 && isTouchingWallRight) targetSpeed = 0f;
-            if (horizontalInput < 0 && isTouchingWallLeft) targetSpeed = 0f;
+            if (effectiveInput > 0 && isTouchingWallRight) targetSpeed = 0f;
+            if (effectiveInput < 0 && isTouchingWallLeft) targetSpeed = 0f;
         }
         else
         {
-            if (horizontalInput > 0 && isTouchingWallRight) targetSpeed = vx;
-            else if (horizontalInput < 0 && isTouchingWallLeft) targetSpeed = vx;
+            if (effectiveInput > 0 && isTouchingWallRight) targetSpeed = vx;
+            else if (effectiveInput < 0 && isTouchingWallLeft) targetSpeed = vx;
         }
 
         float accelRate = isGrounded
@@ -196,17 +331,40 @@ public class PlayerManager : MonoBehaviour
 #if UNITY_EDITOR
     void OnGUI()
     {
-        GUILayout.BeginArea(new Rect(10, 10, 220, 60));
+        GUILayout.BeginArea(new Rect(10, 10, 220, 100));
         GUILayout.Label($"Grounded: {isGrounded}");
         GUILayout.Label($"Velocity: {rb.linearVelocity}");
+        GUILayout.Label($"Wall Sliding: {isWallSliding}");
+        GUILayout.Label($"Wall: L={isTouchingWallLeft} R={isTouchingWallRight}");
         GUILayout.EndArea();
     }
 #endif
 
     void OnDrawGizmosSelected()
     {
-        if (groundCheck == null) return;
-        Gizmos.color = isGrounded ? Color.green : Color.gray;
-        Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+        // Ground Check Visualisierung (Box)
+        Collider2D col = GetComponent<Collider2D>();
+        Vector3 origin = groundCheck != null ? groundCheck.position : 
+            (col != null ? col.bounds.center : transform.position);
+        
+        Gizmos.color = isGrounded ? Color.green : Color.red;
+        Vector3 boxSize = new Vector3(groundCheckWidth, 0.02f, 0f);
+        Vector3 boxBottom = origin + Vector3.down * groundCheckDistance;
+        Gizmos.DrawWireCube(origin, boxSize);
+        Gizmos.DrawWireCube(boxBottom, boxSize);
+        Gizmos.DrawLine(origin - new Vector3(groundCheckWidth / 2, 0, 0), 
+                        boxBottom - new Vector3(groundCheckWidth / 2, 0, 0));
+        Gizmos.DrawLine(origin + new Vector3(groundCheckWidth / 2, 0, 0), 
+                        boxBottom + new Vector3(groundCheckWidth / 2, 0, 0));
+        
+        // Wall Check Visualisierung
+        if (col != null)
+        {
+            Bounds b = col.bounds;
+            Gizmos.color = isTouchingWallLeft ? Color.cyan : Color.gray;
+            Gizmos.DrawLine(b.center, (Vector2)b.center + Vector2.left * (b.extents.x + wallCheckDistance));
+            Gizmos.color = isTouchingWallRight ? Color.cyan : Color.gray;
+            Gizmos.DrawLine(b.center, (Vector2)b.center + Vector2.right * (b.extents.x + wallCheckDistance));
+        }
     }
 }

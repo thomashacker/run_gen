@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 1106639318301133617}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.346, z: 0}
+  m_LocalPosition: {x: 0.029, y: -0.343, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -86,7 +86,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: a53789b136a951f4bbc98c345fed8e73, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -147,7 +147,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.55250806, y: -1.8204104, z: 0.0961548}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.75, y: 0.75, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8003884461704356416}
@@ -194,13 +194,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
-  acceleration: 15
-  deceleration: 20
-  jumpForce: 5
-  gravityRiseHold: 0.8
-  gravityFall: 2
-  jumpCutGravityMult: 1.5
-  maxFallSpeed: 30
+  acceleration: 12
+  deceleration: 12
+  jumpForce: 5.2
+  gravityRiseHold: 0.85
+  gravityFall: 2.2
+  jumpCutGravityMult: 1.7
+  maxFallSpeed: 40
   coyoteTime: 0.1
   jumpBufferTime: 0.15
   jumpHangThreshold: 0.5
@@ -209,10 +209,18 @@ MonoBehaviour:
   fastFallGravityMult: 1.4
   airAcceleration: 15
   airDeceleration: 25
+  enableWallJump: 1
+  wallJumpForceY: 5
+  wallJumpForceX: 4
+  wallJumpInputLockTime: 0.5
+  wallCoyoteTime: 0.1
+  enableWallSlide: 1
+  wallSlideMaxSpeed: 2.5
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  groundCheckRadius: 0.2
+  groundCheckWidth: 0.24
+  groundCheckDistance: 0.07
   groundCheck: {fileID: 5497585448126900847}
   wallCheckDistance: 0.1
 --- !u!70 &8180909762023815991
@@ -249,6 +257,6 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 0.53, y: 0.67}
+  m_Offset: {x: 0.020000001, y: -0.00853316}
+  m_Size: {x: 0.35, y: 0.6219057}
   m_Direction: 0
