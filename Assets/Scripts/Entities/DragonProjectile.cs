@@ -48,6 +48,7 @@ public class DragonProjectile : MonoBehaviour
     {
         if (hasHit) return;
         if (IsOwner(other.gameObject)) return;
+        if (!IsValidTarget(other.gameObject)) return;
         
         HandleHit(other.ClosestPoint(transform.position));
     }
@@ -56,6 +57,7 @@ public class DragonProjectile : MonoBehaviour
     {
         if (hasHit) return;
         if (IsOwner(collision.gameObject)) return;
+        if (!IsValidTarget(collision.gameObject)) return;
         
         Vector2 hitPoint;
         if (collision.contacts.Length > 0)
@@ -76,6 +78,17 @@ public class DragonProjectile : MonoBehaviour
     bool IsOwner(GameObject obj)
     {
         return owner != null && (obj == owner || obj.transform.IsChildOf(owner.transform));
+    }
+    
+    bool IsValidTarget(GameObject obj)
+    {
+        int objLayer = obj.layer;
+        
+        // Prüft ob der Layer in groundLayer oder playerLayer enthalten ist
+        bool isGround = ((1 << objLayer) & groundLayer) != 0;
+        bool isPlayer = ((1 << objLayer) & playerLayer) != 0;
+        
+        return isGround || isPlayer;
     }
     
     void HandleHit(Vector2 hitPoint)

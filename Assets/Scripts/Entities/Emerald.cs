@@ -1,15 +1,15 @@
 using UnityEngine;
 
 /// <summary>
-/// Aufsammelbarer Rubin/Münze.
-/// Verschwindet bei Spieler-Berührung und gibt Punkte.
+/// Aufsammelbares XP-Item.
+/// Verschwindet bei Spieler-Berührung und gibt XP.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class Emerald : MonoBehaviour
 {
-    [Header("Value")]
-    [Tooltip("Wert dieses Rubins")]
-    public int value = 1;
+    [Header("XP Value")]
+    [Tooltip("XP-Wert dieses Items")]
+    public int xpValue = 1;
     
     [Header("Effects")]
     public GameObject collectEffectPrefab;
@@ -65,10 +65,10 @@ public class Emerald : MonoBehaviour
     {
         collected = true;
         
-        // GameManager informieren
-        if (GameManager.Instance != null)
+        // LevelManager XP geben
+        if (LevelManager.Instance != null)
         {
-            GameManager.Instance.AddCoins(value);
+            LevelManager.Instance.AddXp(xpValue);
         }
         
         // Effekt spawnen

@@ -13,19 +13,17 @@ public class UIManager : MonoBehaviour
     [Header("HUD - Während des Spiels")]
     public GameObject hudPanel;
     public TextMeshProUGUI distanceText;
-    public TextMeshProUGUI coinsText;
     
     [Header("Game Over Screen")]
     public GameObject gameOverPanel;
     public TextMeshProUGUI finalDistanceText;
     public TextMeshProUGUI highScoreText;
-    public TextMeshProUGUI finalCoinsText;
+    public TextMeshProUGUI finalLevelText;
     public Button restartButton;
     public Button exitButton;
     
     [Header("Settings")]
     public string distanceFormat = "{0:F0}m";
-    public string coinsFormat = "{0}";
     
     void Awake()
     {
@@ -58,7 +56,6 @@ public class UIManager : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnGameOver += OnGameOver;
-            GameManager.Instance.OnCoinsChanged += OnCoinsChanged;
         }
         
         // Initial Update
@@ -80,7 +77,6 @@ public class UIManager : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnGameOver -= OnGameOver;
-            GameManager.Instance.OnCoinsChanged -= OnCoinsChanged;
         }
     }
     
@@ -106,12 +102,6 @@ public class UIManager : MonoBehaviour
         if (distanceText != null)
         {
             distanceText.text = string.Format(distanceFormat, GameManager.Instance.Distance);
-        }
-        
-        // Coins
-        if (coinsText != null)
-        {
-            coinsText.text = string.Format(coinsFormat, GameManager.Instance.Coins);
         }
     }
     
@@ -148,10 +138,10 @@ public class UIManager : MonoBehaviour
             highScoreText.text = $"Best: {GameManager.Instance.HighScore:F0}m";
         }
         
-        // Final Coins
-        if (finalCoinsText != null)
+        // Final Level
+        if (finalLevelText != null && LevelManager.Instance != null)
         {
-            finalCoinsText.text = $"Coins: {GameManager.Instance.TotalCoinsCollected}";
+            finalLevelText.text = $"Level: {LevelManager.Instance.CurrentLevel}";
         }
     }
     
@@ -162,15 +152,6 @@ public class UIManager : MonoBehaviour
     void OnGameOver()
     {
         ShowGameOver();
-    }
-    
-    void OnCoinsChanged(int newAmount)
-    {
-        // Coins sofort updaten (optional: Animation hier einfügen)
-        if (coinsText != null)
-        {
-            coinsText.text = string.Format(coinsFormat, newAmount);
-        }
     }
     
     void OnRestartClicked()

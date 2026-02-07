@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 724455464868738075}
   - component: {fileID: 4426576994199888370}
   - component: {fileID: 6528443562898137136}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: GreenEmerald
   m_TagString: Untagged
   m_Icon: {fileID: 0}

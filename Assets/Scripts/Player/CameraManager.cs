@@ -18,9 +18,20 @@ public class CameraManager : MonoBehaviour
     public float lookAheadAmount = 2f;       // Wie weit vorausschauen
     public float lookAheadSpeed = 3f;        // Wie schnell die Kamera vorausschaut
     
+    [Header("Dynamic Zoom")]
+    public bool enableDynamicZoom = true;    // Zoom basierend auf Spielerhöhe
+    public float baseZoom = 5f;              // Basis orthographicSize (bei Y = baseHeight)
+    public float baseHeight = 5f;            // Referenz-Höhe für baseZoom
+    public float zoomPerUnit = 0.15f;        // Zusätzlicher Zoom pro Höheneinheit über baseHeight
+    public float minZoom = 4f;               // Minimaler Zoom (max reingezoomt)
+    public float maxZoom = 12f;              // Maximaler Zoom (max rausgezoomt)
+    public float zoomSpeed = 3f;             // Wie smooth der Zoom ist
+    
     private float currentLookAhead = 0f;
     private Vector3 velocity = Vector3.zero;
     private Camera cam;
+    private float targetZoom;
+    private float currentZoom;
     
     void Awake()
     {
@@ -37,6 +48,14 @@ public class CameraManager : MonoBehaviour
             {
                 target = pm.transform;
             }
+        }
+        
+        // Zoom initialisieren
+        currentZoom = baseZoom;
+        targetZoom = baseZoom;
+        if (cam != null)
+        {
+            cam.orthographicSize = baseZoom;
         }
         
         // Kamera sofort auf Spieler setzen
@@ -63,6 +82,19 @@ public class CameraManager : MonoBehaviour
                 currentLookAhead = Mathf.Lerp(currentLookAhead, targetLookAhead, lookAheadSpeed * Time.deltaTime);
                 targetX += currentLookAhead;
             }
+        }
+        
+        // === DYNAMIC ZOOM ===
+        if (enableDynamicZoom && cam != null)
+        {
+            // Je höher der Spieler über baseHeight, desto mehr rauszoomen
+            float heightDelta = target.position.y - baseHeight;
+            targetZoom = baseZoom + (heightDelta * zoomPerUnit);
+            targetZoom = Mathf.Clamp(targetZoom, minZoom, maxZoom);
+            
+            // Smooth Zoom
+            currentZoom = Mathf.Lerp(currentZoom, targetZoom, zoomSpeed * Time.deltaTime);
+            cam.orthographicSize = currentZoom;
         }
         
         // === Y-POSITION ===
@@ -99,6 +131,16 @@ public class CameraManager : MonoBehaviour
     public void SnapToTarget()
     {
         if (target == null) return;
+        
+        // Zoom sofort setzen
+        if (enableDynamicZoom && cam != null)
+        {
+            float heightDelta = target.position.y - baseHeight;
+            targetZoom = baseZoom + (heightDelta * zoomPerUnit);
+            targetZoom = Mathf.Clamp(targetZoom, minZoom, maxZoom);
+            currentZoom = targetZoom;
+            cam.orthographicSize = currentZoom;
+        }
         
         float cameraHalfHeight = cam != null ? cam.orthographicSize : 5f;
         float minCameraY = minVisibleY + cameraHalfHeight;

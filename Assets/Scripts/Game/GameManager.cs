@@ -14,15 +14,10 @@ public class GameManager : MonoBehaviour
     // Events
     public event Action OnGameOver;
     public event Action OnGameRestart;
-    public event Action<int> OnCoinsChanged;
     
     // Distance
     public float Distance { get; private set; } = 0f;
     public float HighScore { get; private set; } = 0f;
-    
-    // Coins
-    public int Coins { get; private set; } = 0;
-    public int TotalCoinsCollected { get; private set; } = 0;
     
     [Header("References")]
     public Transform player;
@@ -94,6 +89,12 @@ public class GameManager : MonoBehaviour
         
         Debug.Log($"Game Over! Distance: {Distance:F1}m | HighScore: {HighScore:F1}m");
         
+        // LevelManager Reset (Rogue-like)
+        if (LevelManager.Instance != null)
+        {
+            LevelManager.Instance.ResetProgress();
+        }
+        
         // Event auslösen
         OnGameOver?.Invoke();
     }
@@ -146,24 +147,4 @@ public class GameManager : MonoBehaviour
         return $"{HighScore:F0}m";
     }
     
-    /// <summary>
-    /// Fügt Coins hinzu (wird von Emerald aufgerufen)
-    /// </summary>
-    public void AddCoins(int amount)
-    {
-        Coins += amount;
-        TotalCoinsCollected += amount;
-        
-        OnCoinsChanged?.Invoke(Coins);
-        
-        Debug.Log($"Coins: {Coins} (+{amount})");
-    }
-    
-    /// <summary>
-    /// Gibt den formatierten Coin-String zurück
-    /// </summary>
-    public string GetCoinsText()
-    {
-        return $"{Coins}";
-    }
 }

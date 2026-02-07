@@ -21,6 +21,17 @@ public class Explosion : MonoBehaviour
     [Tooltip("Wenn true, tötet sofort unabhängig von HP")]
     public bool instantKill = false;
     
+    [Header("Knockback")]
+    [Tooltip("Aktiviert Knockback-Effekt")]
+    public bool enableKnockback = true;
+    [Tooltip("Radius für Knockback (0 = nutzt damageRadius)")]
+    public float knockbackRadius = 0f;
+    [Tooltip("Stärke des Knockbacks")]
+    public float knockbackForce = 15f;
+    [Tooltip("Vertikale Komponente des Knockbacks (0-1, höher = mehr nach oben)")]
+    [Range(0f, 1f)]
+    public float knockbackUpwardBias = 0.3f;
+    
     [Header("Timing")]
     [Tooltip("Verzögerung bevor Explosion wirkt (für Animation)")]
     public float explosionDelay = 0f;
@@ -62,6 +73,12 @@ public class Explosion : MonoBehaviour
         if ((damage > 0 || instantKill) && damageRadius > 0)
         {
             DamagePlayer();
+        }
+        
+        // Knockback
+        if (enableKnockback && knockbackForce > 0)
+        {
+            ApplyKnockback();
         }
     }
     
@@ -152,14 +169,63 @@ public class Explosion : MonoBehaviour
         }
     }
     
+    void ApplyKnockback()
+    {
+        float radius = knockbackRadius > 0 ? knockbackRadius : damageRadius;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, radius, playerLayer);
+        
+        foreach (var hit in hits)
+        {
+            Rigidbody2D playerRb = hit.GetComponent<Rigidbody2D>();
+            if (playerRb == null)
+                playerRb = hit.GetComponentInParent<Rigidbody2D>();
+            
+            if (playerRb != null)
+            {
+                // Richtung weg von der Explosion
+                Vector2 direction = (playerRb.position - (Vector2)transform.position).normalized;
+                
+                // Falls direkt auf der Explosion, nach oben werfen
+                if (direction.sqrMagnitude < 0.01f)
+                    direction = Vector2.up;
+                
+                // Upward Bias hinzufügen (macht den Knockback "explosiver")
+                direction = new Vector2(
+                    direction.x * (1f - knockbackUpwardBias),
+                    direction.y + knockbackUpwardBias
+                ).normalized;
+                
+                // Distanz-basierte Abschwächung (näher = stärker)
+                float distance = Vector2.Distance(transform.position, playerRb.position);
+                float falloff = 1f - Mathf.Clamp01(distance / radius);
+                float finalForce = knockbackForce * falloff;
+                
+                // Kraft anwenden - Velocity direkt setzen für sofortigen Effekt
+                playerRb.linearVelocity = direction * finalForce;
+                
+                if (debugMode)
+                {
+                    Debug.Log($"[Explosion] Knockback applied: dir={direction}, force={finalForce:F1}");
+                }
+            }
+        }
+    }
+    
     void OnDrawGizmosSelected()
     {
         // Tile Destruction Radius
         Gizmos.color = new Color(1f, 0.5f, 0f, 0.3f);
-        Gizmos.DrawSphere(transform.position, tileDestructionRadius * 0.5f); // Ungefähre Visualisierung
+        Gizmos.DrawSphere(transform.position, tileDestructionRadius * 0.5f);
         
         // Damage Radius
         Gizmos.color = new Color(1f, 0f, 0f, 0.5f);
         Gizmos.DrawWireSphere(transform.position, damageRadius);
+        
+        // Knockback Radius (wenn unterschiedlich zum Damage Radius)
+        if (enableKnockback && knockbackRadius > 0 && knockbackRadius != damageRadius)
+        {
+            Gizmos.color = new Color(0f, 0.5f, 1f, 0.3f);
+            Gizmos.DrawWireSphere(transform.position, knockbackRadius);
+        }
     }
 }

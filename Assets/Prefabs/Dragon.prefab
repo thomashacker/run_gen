@@ -322,6 +322,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   spriteRenderer: {fileID: 563600936185782836}
+  deathDropPrefab: {fileID: 7364691822147532462, guid: 977f9af1e9c36604581161fcb6bb9efc, type: 3}
+  deathDropOffset: {x: 0, y: 0, z: 0}
+  deathEffectPrefab: {fileID: 0}
 --- !u!61 &4173401564009762561
 BoxCollider2D:
   m_ObjectHideFlags: 0

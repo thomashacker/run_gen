@@ -37,6 +37,14 @@ public class DragonEnemy : MonoBehaviour
     [Header("References")]
     public SpriteRenderer spriteRenderer;
     
+    [Header("Death")]
+    [Tooltip("Prefab das beim Tod gespawnt wird (z.B. Emerald)")]
+    public GameObject deathDropPrefab;
+    [Tooltip("Offset für den Drop-Spawn")]
+    public Vector3 deathDropOffset = Vector3.zero;
+    [Tooltip("Effekt beim Tod (Particles, etc.)")]
+    public GameObject deathEffectPrefab;
+    
     // Private
     private Rigidbody2D rb;
     private Transform player;
@@ -253,7 +261,18 @@ public class DragonEnemy : MonoBehaviour
     /// </summary>
     public void OnStomped()
     {
-        // TODO: Death Animation, Particles, Sound
+        // Drop spawnen (z.B. Emerald)
+        if (deathDropPrefab != null)
+        {
+            Instantiate(deathDropPrefab, transform.position + deathDropOffset, Quaternion.identity);
+        }
+        
+        // Death Effect spawnen (Particles, etc.)
+        if (deathEffectPrefab != null)
+        {
+            Instantiate(deathEffectPrefab, transform.position, Quaternion.identity);
+        }
+        
         Destroy(gameObject);
     }
     
