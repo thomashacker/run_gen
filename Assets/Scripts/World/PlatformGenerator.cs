@@ -3,9 +3,10 @@ using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 
 /// <summary>
-/// Generiert schwebende Plattformen über dem Hauptboden.
-/// Unterstützt mehrere Ebenen mit eigener Noise-Kurve.
+/// DEPRECATED: Use WorldGeneration.PlatformPass instead.
+/// This script is kept for reference only.
 /// </summary>
+[System.Obsolete("Use WorldGeneration.PlatformPass instead")]
 public class PlatformGenerator : MonoBehaviour
 {
     [System.Serializable]

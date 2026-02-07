@@ -1,6 +1,11 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
+/// <summary>
+/// DEPRECATED: Use WorldGeneration.ChunkManager with Passes instead.
+/// This script is kept for reference only.
+/// </summary>
+[System.Obsolete("Use WorldGeneration.ChunkManager with Passes instead")]
 [RequireComponent(typeof(Tilemap))]
 public class GroundGenerator : MonoBehaviour
 {
