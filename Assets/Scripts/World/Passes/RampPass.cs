@@ -33,7 +33,7 @@ namespace WorldGeneration
                 int curr = heights[x];
                 if (curr < 0) continue;
 
-                int prev = (x > 0) ? heights[x - 1] : GetLeftNeighborHeight(context);
+                int prev = (x > 0) ? heights[x - 1] : ChunkUtilities.GetLeftNeighborHeight(context, -1);
                 if (prev < 0) continue;
 
                 int diff = curr - prev;
@@ -67,13 +67,6 @@ namespace WorldGeneration
             }
         }
 
-        int GetLeftNeighborHeight(GenerationContext context)
-        {
-            if (context.leftNeighbor != null && context.leftNeighbor.metadata.isComplete)
-                return context.leftNeighbor.metadata.rightEdgeHeight;
-            return -1;
-        }
-
         void TryPlaceRamp(ChunkData chunk, int x, int y, bool isUpRamp)
         {
             if (!chunk.IsInBounds(x, y)) return;
@@ -82,10 +75,13 @@ namespace WorldGeneration
             TileData existing = chunk[x, y];
             if (!existing.IsEmpty && existing.type != TileType.Air) return;
 
-            // REGEL 1: Mindestens ein horizontaler Nachbar frei
+            // REGEL 1: Unter der Rampe muss ein solider Block sein (keine Ledge!)
+            if (!HasSolidBelow(chunk, x, y)) return;
+
+            // REGEL 2: Mindestens ein horizontaler Nachbar frei
             if (!HasFreeNeighbor(chunk, x, y)) return;
 
-            // REGEL 2: Keine gegenläufige Rampe daneben (keine Spitzen)
+            // REGEL 3: Keine gegenläufige Rampe daneben (keine Spitzen)
             if (HasOpposingRampNeighbor(chunk, x, y, isUpRamp)) return;
 
             // Rampe setzen
@@ -93,6 +89,21 @@ namespace WorldGeneration
             ramp.heightLevel = y;
             ramp.flags |= TileFlags.EdgeTop;
             chunk[x, y] = ramp;
+        }
+        
+        /// <summary>
+        /// Prüft ob unter der Position ein solider Block ist (kein Air, Gap, oder Ramp).
+        /// Verhindert Rampen an Ledges wo der Spieler nicht rüberspringen kann.
+        /// </summary>
+        bool HasSolidBelow(ChunkData chunk, int x, int y)
+        {
+            int belowY = y - 1;
+            if (!chunk.IsInBounds(x, belowY)) return false;
+            
+            TileData below = chunk[x, belowY];
+            
+            // Muss solid sein (nicht leer, nicht Ramp)
+            return below.IsSolid && !below.IsRamp;
         }
 
         bool HasFreeNeighbor(ChunkData chunk, int x, int y)
@@ -144,9 +155,8 @@ namespace WorldGeneration
 
         bool IsGapAt(ChunkData chunk, int x, int y)
         {
-            if (!chunk.IsInBounds(x, y)) return true;
-            TileData tile = chunk[x, y];
-            return tile.type == TileType.Gap || tile.type == TileType.Air;
+            // Nutzt ChunkUtilities
+            return ChunkUtilities.IsEmpty(chunk, x, y);
         }
 
         void Reset() => passName = "Ramp Pass";

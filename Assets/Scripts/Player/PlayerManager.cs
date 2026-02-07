@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
@@ -54,6 +55,8 @@ public class PlayerManager : MonoBehaviour
 
     [Header("Ground Check")]
     public LayerMask groundLayer;
+    [Tooltip("Layer für Enemies auf denen man stehen/springen kann")]
+    public LayerMask enemyLayer;
     [Tooltip("Breite des Ground-Check Box (sollte etwas kleiner als Spieler sein)")]
     public float groundCheckWidth = 0.4f;
     [Tooltip("Wie weit nach unten gecheckt wird")]
@@ -62,6 +65,22 @@ public class PlayerManager : MonoBehaviour
 
     [Header("Wall Check (optional)")]
     public float wallCheckDistance = 0.1f;
+    
+    [Header("Health")]
+    public int maxHealth = 100;
+    public float invincibilityDuration = 1f;
+    
+    // Health Events
+    public event Action<int, int> OnHealthChanged; // (currentHealth, maxHealth)
+    public event Action OnDamaged;
+    public event Action OnHealed;
+    
+    // Health Properties
+    public int CurrentHealth { get; private set; }
+    public float HealthPercent => (float)CurrentHealth / maxHealth;
+    public bool IsInvincible => invincibilityTimeLeft > 0f;
+    
+    private float invincibilityTimeLeft = 0f;
 
     private Rigidbody2D rb;
     private Collider2D playerCollider;
@@ -94,6 +113,9 @@ public class PlayerManager : MonoBehaviour
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+        
+        // Health initialisieren
+        CurrentHealth = maxHealth;
     }
 
     void Update()
@@ -107,6 +129,10 @@ public class PlayerManager : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.Space))
             jumpCutThisFrame = true;
+        
+        // Invincibility Timer
+        if (invincibilityTimeLeft > 0f)
+            invincibilityTimeLeft -= Time.deltaTime;
     }
 
     void FixedUpdate()
@@ -146,6 +172,9 @@ public class PlayerManager : MonoBehaviour
         Vector2 origin = groundCheck != null ? (Vector2)groundCheck.position : (Vector2)playerCollider.bounds.center;
         Vector2 boxSize = new Vector2(groundCheckWidth, 0.02f);
         
+        // Kombiniere Ground und Enemy Layer
+        LayerMask combinedLayers = groundLayer | enemyLayer;
+        
         // Kleine Box, castet nach unten
         RaycastHit2D hit = Physics2D.BoxCast(
             origin,
@@ -153,7 +182,7 @@ public class PlayerManager : MonoBehaviour
             0f,
             Vector2.down,
             groundCheckDistance,
-            groundLayer
+            combinedLayers
         );
         
         isGrounded = hit.collider != null;
@@ -326,6 +355,65 @@ public class PlayerManager : MonoBehaviour
         rb.simulated = false;
         if (GameManager.Instance != null)
             GameManager.Instance.PlayerDied();
+    }
+    
+    /// <summary>
+    /// Fügt dem Spieler Schaden zu. Bei 0 HP stirbt der Spieler.
+    /// </summary>
+    public void TakeDamage(int damage)
+    {
+        if (isDead) return;
+        if (IsInvincible) return;
+        if (damage <= 0) return;
+        
+        CurrentHealth -= damage;
+        CurrentHealth = Mathf.Max(CurrentHealth, 0);
+        
+        // Events auslösen
+        OnDamaged?.Invoke();
+        OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
+        
+        Debug.Log($"[Player] Took {damage} damage. Health: {CurrentHealth}/{maxHealth}");
+        
+        // Tod bei 0 HP
+        if (CurrentHealth <= 0)
+        {
+            Die();
+            return;
+        }
+        
+        // Invincibility aktivieren
+        invincibilityTimeLeft = invincibilityDuration;
+    }
+    
+    /// <summary>
+    /// Heilt den Spieler.
+    /// </summary>
+    public void Heal(int amount)
+    {
+        if (isDead) return;
+        if (amount <= 0) return;
+        
+        int oldHealth = CurrentHealth;
+        CurrentHealth += amount;
+        CurrentHealth = Mathf.Min(CurrentHealth, maxHealth);
+        
+        if (CurrentHealth > oldHealth)
+        {
+            OnHealed?.Invoke();
+            OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
+            Debug.Log($"[Player] Healed {amount}. Health: {CurrentHealth}/{maxHealth}");
+        }
+    }
+    
+    /// <summary>
+    /// Setzt Health auf Maximum zurück.
+    /// </summary>
+    public void ResetHealth()
+    {
+        CurrentHealth = maxHealth;
+        invincibilityTimeLeft = 0f;
+        OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
     }
 
 #if UNITY_EDITOR

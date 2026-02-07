@@ -72,11 +72,8 @@ namespace WorldGeneration
         
         void CutGap(ChunkData chunk, int x)
         {
-            // Oberflächen-Höhe holen
-            int surfaceHeight = chunk.metadata.surfaceHeights != null && x < chunk.metadata.surfaceHeights.Length
-                ? chunk.metadata.surfaceHeights[x]
-                : chunk.GetSurfaceHeight(x);
-            
+            // Oberflächen-Höhe holen (nutzt ChunkUtilities)
+            int surfaceHeight = ChunkUtilities.GetGroundHeight(chunk, x, -1);
             if (surfaceHeight < 0) return;
             
             // Gap schneiden

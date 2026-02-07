@@ -124,18 +124,63 @@ namespace WorldGeneration
         /// <summary>
         /// Löscht Tiles an einer Position auf allen Tilemaps.
         /// </summary>
-        public void ClearTile(int worldX, int worldY)
+        public void ClearTile(int worldX, int worldY, bool debug = false)
         {
             Vector3Int pos = new Vector3Int(worldX, worldY, 0);
             
             if (groundTilemap != null)
+            {
+                var existingTile = groundTilemap.GetTile(pos);
+                if (debug && existingTile != null)
+                {
+                    Debug.Log($"[ChunkRenderer] Clearing tile at {pos}, was: {existingTile.name}");
+                }
+                
                 groundTilemap.SetTile(pos, null);
+                groundTilemap.RefreshTile(pos);
+            }
             
             if (platformTilemap != null && platformTilemap != groundTilemap)
+            {
                 platformTilemap.SetTile(pos, null);
+                platformTilemap.RefreshTile(pos);
+            }
             
             if (backgroundTilemap != null)
+            {
                 backgroundTilemap.SetTile(pos, null);
+                backgroundTilemap.RefreshTile(pos);
+            }
+        }
+        
+        /// <summary>
+        /// Aktualisiert alle Tilemap-Collider (nach dynamischen Änderungen).
+        /// </summary>
+        public void RefreshColliders()
+        {
+            RefreshTilemapCollider(groundTilemap);
+            
+            if (platformTilemap != null && platformTilemap != groundTilemap)
+                RefreshTilemapCollider(platformTilemap);
+        }
+        
+        void RefreshTilemapCollider(Tilemap tilemap)
+        {
+            if (tilemap == null) return;
+            
+            // TilemapCollider2D sofort aktualisieren (ProcessTilemapChanges)
+            var tilemapCollider = tilemap.GetComponent<TilemapCollider2D>();
+            if (tilemapCollider != null && tilemapCollider.enabled)
+            {
+                tilemapCollider.ProcessTilemapChanges();
+            }
+            
+            // CompositeCollider2D refreshen (falls vorhanden)
+            var compositeCollider = tilemap.GetComponent<CompositeCollider2D>();
+            if (compositeCollider != null)
+            {
+                compositeCollider.GenerateGeometry();
+            }
         }
         
         /// <summary>

@@ -79,10 +79,8 @@ namespace WorldGeneration
             {
                 int worldX = chunk.LocalToWorldX(x);
                 
-                // Ground-Höhe an dieser Stelle
-                int groundHeight = chunk.metadata.surfaceHeights != null && x < chunk.metadata.surfaceHeights.Length
-                    ? chunk.metadata.surfaceHeights[x]
-                    : 3;
+                // Ground-Höhe an dieser Stelle (nutzt ChunkUtilities)
+                int groundHeight = ChunkUtilities.GetGroundHeight(chunk, x, 3);
                 
                 // Jeden Layer verarbeiten
                 for (int i = 0; i < layers.Count; i++)
@@ -182,38 +180,8 @@ namespace WorldGeneration
         /// </summary>
         int GetMaxGroundHeightInRange(ChunkData chunk, int localX)
         {
-            if (chunk.metadata.surfaceHeights == null)
-                return 3;
-            
-            int maxHeight = 0;
-            
-            // Look-Behind
-            for (int i = groundLookBehind; i >= 1; i--)
-            {
-                int checkX = localX - i;
-                if (checkX >= 0 && checkX < chunk.metadata.surfaceHeights.Length)
-                {
-                    maxHeight = Mathf.Max(maxHeight, chunk.metadata.surfaceHeights[checkX]);
-                }
-            }
-            
-            // Aktuelle Position
-            if (localX >= 0 && localX < chunk.metadata.surfaceHeights.Length)
-            {
-                maxHeight = Mathf.Max(maxHeight, chunk.metadata.surfaceHeights[localX]);
-            }
-            
-            // Look-Ahead
-            for (int i = 1; i <= groundLookAhead; i++)
-            {
-                int checkX = localX + i;
-                if (checkX >= 0 && checkX < chunk.metadata.surfaceHeights.Length)
-                {
-                    maxHeight = Mathf.Max(maxHeight, chunk.metadata.surfaceHeights[checkX]);
-                }
-            }
-            
-            return maxHeight;
+            // Nutzt ChunkUtilities
+            return ChunkUtilities.GetMaxGroundHeightInRange(chunk, localX, groundLookBehind, groundLookAhead);
         }
         
         void SetPlatformTiles(ChunkData chunk, int localX, int topY, int thickness)

@@ -14,11 +14,15 @@ public class GameManager : MonoBehaviour
     // Events
     public event Action OnGameOver;
     public event Action OnGameRestart;
+    public event Action<int> OnCoinsChanged;
     
-    // Score (Distanz-basiert)
-    public float Score { get; private set; } = 0f;
+    // Distance
+    public float Distance { get; private set; } = 0f;
     public float HighScore { get; private set; } = 0f;
-    public float DistanceInMeters => Score;
+    
+    // Coins
+    public int Coins { get; private set; } = 0;
+    public int TotalCoinsCollected { get; private set; } = 0;
     
     [Header("References")]
     public Transform player;
@@ -63,12 +67,11 @@ public class GameManager : MonoBehaviour
     
     void Update()
     {
-        // Score nur während des Spielens berechnen (Distanz-basiert)
+        // Distance während des Spielens berechnen
         if (CurrentState == GameState.Playing && player != null)
         {
-            // Distanz = aktuelle X-Position - Startposition
-            float distance = player.position.x - playerStartX;
-            Score = Mathf.Max(Score, distance); // Nur vorwärts zählen
+            float dist = player.position.x - playerStartX;
+            Distance = Mathf.Max(Distance, dist); // Nur vorwärts zählen
         }
     }
     
@@ -82,14 +85,14 @@ public class GameManager : MonoBehaviour
         CurrentState = GameState.GameOver;
         
         // HighScore speichern
-        if (Score > HighScore)
+        if (Distance > HighScore)
         {
-            HighScore = Score;
+            HighScore = Distance;
             PlayerPrefs.SetFloat("HighScore", HighScore);
             PlayerPrefs.Save();
         }
         
-        Debug.Log($"Game Over! Distance: {Score:F1}m | HighScore: {HighScore:F1}m");
+        Debug.Log($"Game Over! Distance: {Distance:F1}m | HighScore: {HighScore:F1}m");
         
         // Event auslösen
         OnGameOver?.Invoke();
@@ -107,19 +110,16 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     
+    [Header("Scene Settings")]
+    public string mainMenuSceneName = "Start";
+    
     /// <summary>
-    /// Beendet das Spiel (oder geht zum Hauptmenü)
+    /// Geht zurück zum Hauptmenü
     /// </summary>
     public void ExitGame()
     {
-        // Später: Zurück zum Hauptmenü
-        Debug.Log("Exit pressed - implement main menu later");
-        
-        #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-        #else
-            Application.Quit();
-        #endif
+        Debug.Log("Returning to Main Menu...");
+        SceneManager.LoadScene(mainMenuSceneName);
     }
     
     /// <summary>
@@ -131,11 +131,11 @@ public class GameManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Gibt den formatierten Score-String zurück
+    /// Gibt den formatierten Distance-String zurück
     /// </summary>
-    public string GetScoreText()
+    public string GetDistanceText()
     {
-        return $"{Score:F0}m";
+        return $"{Distance:F0}m";
     }
     
     /// <summary>
@@ -144,5 +144,26 @@ public class GameManager : MonoBehaviour
     public string GetHighScoreText()
     {
         return $"{HighScore:F0}m";
+    }
+    
+    /// <summary>
+    /// Fügt Coins hinzu (wird von Emerald aufgerufen)
+    /// </summary>
+    public void AddCoins(int amount)
+    {
+        Coins += amount;
+        TotalCoinsCollected += amount;
+        
+        OnCoinsChanged?.Invoke(Coins);
+        
+        Debug.Log($"Coins: {Coins} (+{amount})");
+    }
+    
+    /// <summary>
+    /// Gibt den formatierten Coin-String zurück
+    /// </summary>
+    public string GetCoinsText()
+    {
+        return $"{Coins}";
     }
 }
