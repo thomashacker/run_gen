@@ -65,18 +65,18 @@ public class HealingPowerUp : PowerUpBase
         {
             case HealingMode.HealOnly:
                 return healAmount == 1 
-                    ? "Heilt 1 Herz"
-                    : $"Heilt {healAmount} Herzen";
+                    ? "Heals 1 Heart"
+                    : $"Heals {healAmount} Hearts";
                     
             case HealingMode.MaxHeartOnly:
                 return maxHeartBonus == 1
-                    ? "+1 Max Herz"
-                    : $"+{maxHeartBonus} Max Herzen";
+                    ? "+1 Max Heart"
+                    : $"+{maxHeartBonus} Max Hearts";
                 
             case HealingMode.HealAndMaxHeart:
-                string healStr = healAmount == 1 ? "1 Herz" : $"{healAmount} Herzen";
-                string maxStr = maxHeartBonus == 1 ? "+1 Max Herz" : $"+{maxHeartBonus} Max Herzen";
-                return $"Heilt {healStr}\n{maxStr}";
+                string healStr = healAmount == 1 ? "1 Heart" : $"{healAmount} Hearts";
+                string maxStr = maxHeartBonus == 1 ? "+1 Max Heart" : $"+{maxHeartBonus} Max Hearts";
+                return $"Heals {healStr}\n{maxStr}";
                 
             default:
                 return description;
@@ -86,9 +86,9 @@ public class HealingPowerUp : PowerUpBase
     void Reset()
     {
         powerUpName = "Healing";
-        description = "Heilt dich und gibt ein zusätzliches Herz";
-        minValue = 1f;  // 1 Herz heilen
-        maxValue = 2f;  // 2 Herzen heilen
+        description = "Heals you and gives you an additional heart";
+        minValue = 1f;  // 1 Heart heal
+        maxValue = 2f;  // 2 Hearts heal
         maxHeartBonus = 1;
         canStack = true;
         mode = HealingMode.HealAndMaxHeart;

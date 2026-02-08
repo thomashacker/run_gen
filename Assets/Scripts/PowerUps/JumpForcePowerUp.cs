@@ -37,15 +37,15 @@ public class JumpForcePowerUp : PowerUpBase
     public override string GetDescription(float value)
     {
         if (isPercentage)
-            return $"Sprungkraft +{value:F0}%";
+            return $"Jump Force +{value:F0}%";
         else
-            return $"Sprungkraft +{value:F1}";
+            return $"Jump Force +{value:F1}";
     }
     
     void Reset()
     {
         powerUpName = "Super Jump";
-        description = "Erhöht deine Sprungkraft um {value}%";
+        description = "Increases your jump force by {value}%";
         minValue = 5f;
         maxValue = 15f;
         canStack = true;

@@ -17,5 +17,5 @@ MonoBehaviour:
   icon: {fileID: 0}
   canStack: 1
   minValue: 5
-  maxValue: 15
+  maxValue: 20
   isPercentage: 1

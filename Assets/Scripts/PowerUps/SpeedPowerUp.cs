@@ -37,15 +37,15 @@ public class SpeedPowerUp : PowerUpBase
     public override string GetDescription(float value)
     {
         if (isPercentage)
-            return $"Bewegungsgeschwindigkeit +{value:F0}%";
+            return $"Speed +{value:F0}%";
         else
-            return $"Bewegungsgeschwindigkeit +{value:F1}";
+            return $"Speed +{value:F1}";
     }
     
     void Reset()
     {
         powerUpName = "Speed Boost";
-        description = "Erhöht deine Bewegungsgeschwindigkeit um {value}%";
+        description = "Increases your speed by {value}%";
         minValue = 5f;
         maxValue = 15f;
         canStack = true;
