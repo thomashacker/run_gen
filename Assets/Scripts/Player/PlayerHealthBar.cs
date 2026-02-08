@@ -1,9 +1,9 @@
 using UnityEngine;
-using UnityEngine.UI;
+using System.Collections.Generic;
 
 /// <summary>
-/// HP-Bar die über dem Spieler schwebt.
-/// Nutzt World Space Canvas für die Anzeige.
+/// Zeigt Herzen im Screen-UI an.
+/// Spawnt volle/leere Herz-Prefabs in einem Container.
 /// </summary>
 public class PlayerHealthBar : MonoBehaviour
 {
@@ -11,61 +11,35 @@ public class PlayerHealthBar : MonoBehaviour
     [Tooltip("Der PlayerManager (wird automatisch gesucht wenn leer)")]
     public PlayerManager player;
     
-    [Header("UI Elements")]
-    [Tooltip("Das Image das als Füllung dient (Image Type = Filled)")]
-    public Image fillImage;
-    [Tooltip("Hintergrund der Health Bar (optional)")]
-    public Image backgroundImage;
+    [Header("Heart Prefabs")]
+    [Tooltip("Prefab für volles Herz")]
+    public GameObject fullHeartPrefab;
+    [Tooltip("Prefab für leeres Herz")]
+    public GameObject emptyHeartPrefab;
     
-    [Header("Colors")]
-    public Color healthyColor = new Color(0.2f, 0.8f, 0.2f); // Grün
-    public Color warnColor = new Color(1f, 0.8f, 0f);        // Gelb
-    public Color dangerColor = new Color(0.9f, 0.2f, 0.2f);  // Rot
-    [Tooltip("HP-Prozent unter dem die Warn-Farbe verwendet wird")]
-    [Range(0f, 1f)] public float warnThreshold = 0.5f;
-    [Tooltip("HP-Prozent unter dem die Danger-Farbe verwendet wird")]
-    [Range(0f, 1f)] public float dangerThreshold = 0.25f;
+    [Header("Container")]
+    [Tooltip("Container mit Layout Group für die Herzen")]
+    public Transform heartsContainer;
     
-    [Header("Position")]
-    [Tooltip("Offset über dem Spieler")]
-    public Vector3 offset = new Vector3(0, 1.5f, 0);
+    [Header("Animation (Optional)")]
+    [Tooltip("Skaliert kurz bei Schaden")]
+    public bool punchOnDamage = true;
+    public float punchScale = 1.3f;
+    public float punchDuration = 0.15f;
     
-    [Header("Animation")]
-    [Tooltip("Geschwindigkeit der Füll-Animation")]
-    public float fillSpeed = 5f;
-    [Tooltip("Dauer für die der Balken bei Schaden blinkt")]
-    public float flashDuration = 0.1f;
-    public Color flashColor = Color.white;
+    private List<GameObject> heartObjects = new List<GameObject>();
+    private int lastMaxHearts = 0;
+    private int lastCurrentHearts = 0;
     
-    [Header("Visibility")]
-    [Tooltip("Versteckt die Bar wenn HP voll ist")]
-    public bool hideWhenFull = true;
-    [Tooltip("Zeigt die Bar für X Sekunden nach Schaden/Heilung")]
-    public float showDuration = 3f;
-    
-    private float targetFillAmount = 1f;
-    private float currentFillAmount = 1f;
-    private float showTimer = 0f;
-    private float flashTimer = 0f;
-    private Color originalFillColor;
-    private CanvasGroup canvasGroup;
+    // Punch Animation State
+    private float punchTimer = 0f;
+    private int punchHeartIndex = -1;
     
     void Awake()
     {
         // Player finden
         if (player == null)
-            player = GetComponentInParent<PlayerManager>();
-        
-        if (player == null)
             player = FindAnyObjectByType<PlayerManager>();
-        
-        // CanvasGroup für Visibility
-        canvasGroup = GetComponent<CanvasGroup>();
-        if (canvasGroup == null)
-            canvasGroup = gameObject.AddComponent<CanvasGroup>();
-        
-        if (fillImage != null)
-            originalFillColor = fillImage.color;
     }
     
     void Start()
@@ -73,134 +47,160 @@ public class PlayerHealthBar : MonoBehaviour
         if (player != null)
         {
             // Events abonnieren
-            player.OnHealthChanged += OnHealthChanged;
+            player.OnHeartsChanged += OnHeartsChanged;
             player.OnDamaged += OnDamaged;
             
             // Initial Update
-            UpdateHealthBar(player.CurrentHealth, player.maxHealth, false);
+            RebuildHearts(player.CurrentHearts, player.MaxHearts);
         }
-        
-        // Initial verstecken wenn gewünscht
-        if (hideWhenFull)
-            SetVisibility(false);
     }
     
     void OnDestroy()
     {
         if (player != null)
         {
-            player.OnHealthChanged -= OnHealthChanged;
+            player.OnHeartsChanged -= OnHeartsChanged;
             player.OnDamaged -= OnDamaged;
         }
     }
     
     void Update()
     {
-        // Position über Spieler halten
-        if (player != null)
+        // Punch Animation
+        if (punchTimer > 0f && punchHeartIndex >= 0 && punchHeartIndex < heartObjects.Count)
         {
-            transform.position = player.transform.position + offset;
-        }
-        
-        // Smooth Fill Animation
-        if (fillImage != null && Mathf.Abs(currentFillAmount - targetFillAmount) > 0.001f)
-        {
-            currentFillAmount = Mathf.Lerp(currentFillAmount, targetFillAmount, Time.deltaTime * fillSpeed);
-            fillImage.fillAmount = currentFillAmount;
-        }
-        
-        // Flash Animation
-        if (flashTimer > 0f)
-        {
-            flashTimer -= Time.deltaTime;
-            if (flashTimer <= 0f && fillImage != null)
+            punchTimer -= Time.unscaledDeltaTime;
+            float t = 1f - (punchTimer / punchDuration);
+            float scale = Mathf.Lerp(punchScale, 1f, t);
+            
+            if (heartObjects[punchHeartIndex] != null)
             {
-                fillImage.color = GetHealthColor(targetFillAmount);
+                heartObjects[punchHeartIndex].transform.localScale = Vector3.one * scale;
             }
-        }
-        
-        // Visibility Timer
-        if (hideWhenFull && showTimer > 0f)
-        {
-            showTimer -= Time.deltaTime;
-            if (showTimer <= 0f && targetFillAmount >= 1f)
+            
+            if (punchTimer <= 0f)
             {
-                SetVisibility(false);
+                punchHeartIndex = -1;
             }
         }
     }
     
-    void OnHealthChanged(int currentHealth, int maxHealth)
+    void OnHeartsChanged(int currentHearts, int maxHearts)
     {
-        UpdateHealthBar(currentHealth, maxHealth, true);
+        // Komplett neu bauen wenn sich maxHearts ändert
+        if (maxHearts != lastMaxHearts)
+        {
+            RebuildHearts(currentHearts, maxHearts);
+        }
+        else
+        {
+            // Nur States updaten
+            UpdateHeartStates(currentHearts);
+        }
     }
     
     void OnDamaged()
     {
-        // Flash-Effekt
-        if (fillImage != null)
+        // Punch Animation auf das zuletzt verlorene Herz
+        if (punchOnDamage && player != null)
         {
-            fillImage.color = flashColor;
-            flashTimer = flashDuration;
-        }
-    }
-    
-    void UpdateHealthBar(int currentHealth, int maxHealth, bool animate)
-    {
-        float percent = maxHealth > 0 ? (float)currentHealth / maxHealth : 0f;
-        targetFillAmount = percent;
-        
-        if (!animate)
-        {
-            currentFillAmount = percent;
-            if (fillImage != null)
-                fillImage.fillAmount = percent;
-        }
-        
-        // Farbe aktualisieren (außer während Flash)
-        if (flashTimer <= 0f && fillImage != null)
-        {
-            fillImage.color = GetHealthColor(percent);
-        }
-        
-        // Sichtbarkeit
-        if (hideWhenFull)
-        {
-            if (percent < 1f)
+            // Das Herz das gerade leer wurde
+            int heartIndex = player.CurrentHearts; // 0-indexed: wenn 2 Herzen übrig, war Index 2 das verlorene
+            if (heartIndex >= 0 && heartIndex < heartObjects.Count)
             {
-                SetVisibility(true);
-                showTimer = showDuration;
+                punchHeartIndex = heartIndex;
+                punchTimer = punchDuration;
+                
+                // Start-Scale setzen
+                if (heartObjects[heartIndex] != null)
+                {
+                    heartObjects[heartIndex].transform.localScale = Vector3.one * punchScale;
+                }
             }
-            else
-            {
-                showTimer = showDuration; // Timer starten um sanft auszublenden
-            }
-        }
-    }
-    
-    Color GetHealthColor(float percent)
-    {
-        if (percent <= dangerThreshold)
-            return dangerColor;
-        if (percent <= warnThreshold)
-            return warnColor;
-        return healthyColor;
-    }
-    
-    void SetVisibility(bool visible)
-    {
-        if (canvasGroup != null)
-        {
-            canvasGroup.alpha = visible ? 1f : 0f;
         }
     }
     
     /// <summary>
-    /// Erzwingt die Anzeige der Health Bar für eine bestimmte Zeit.
+    /// Baut alle Herzen komplett neu auf.
     /// </summary>
-    public void ForceShow(float duration = -1f)
+    void RebuildHearts(int currentHearts, int maxHearts)
     {
-        SetVisibility(true);
-        showTimer = duration > 0 ? duration : showDuration;
+        // Alte Herzen löschen
+        ClearHearts();
+        
+        // Neue Herzen erstellen
+        for (int i = 0; i < maxHearts; i++)
+        {
+            bool isFull = i < currentHearts;
+            GameObject prefab = isFull ? fullHeartPrefab : emptyHeartPrefab;
+            
+            if (prefab != null && heartsContainer != null)
+            {
+                GameObject heart = Instantiate(prefab, heartsContainer);
+                heartObjects.Add(heart);
+            }
+        }
+        
+        lastMaxHearts = maxHearts;
+        lastCurrentHearts = currentHearts;
+    }
+    
+    /// <summary>
+    /// Updatet nur die Herz-States ohne neu zu spawnen.
+    /// </summary>
+    void UpdateHeartStates(int currentHearts)
+    {
+        if (fullHeartPrefab == null || emptyHeartPrefab == null) return;
+        
+        for (int i = 0; i < heartObjects.Count; i++)
+        {
+            if (heartObjects[i] == null) continue;
+            
+            bool shouldBeFull = i < currentHearts;
+            bool wasFull = i < lastCurrentHearts;
+            
+            // Nur ändern wenn nötig
+            if (shouldBeFull != wasFull)
+            {
+                // Altes Herz entfernen, neues spawnen
+                Vector3 scale = heartObjects[i].transform.localScale;
+                int siblingIndex = heartObjects[i].transform.GetSiblingIndex();
+                
+                Destroy(heartObjects[i]);
+                
+                GameObject prefab = shouldBeFull ? fullHeartPrefab : emptyHeartPrefab;
+                GameObject newHeart = Instantiate(prefab, heartsContainer);
+                newHeart.transform.SetSiblingIndex(siblingIndex);
+                newHeart.transform.localScale = scale;
+                
+                heartObjects[i] = newHeart;
+            }
+        }
+        
+        lastCurrentHearts = currentHearts;
+    }
+    
+    /// <summary>
+    /// Entfernt alle Herz-Objekte.
+    /// </summary>
+    void ClearHearts()
+    {
+        foreach (var heart in heartObjects)
+        {
+            if (heart != null)
+                Destroy(heart);
+        }
+        heartObjects.Clear();
+    }
+    
+    /// <summary>
+    /// Erzwingt ein komplettes Neuaufbauen der Herzen.
+    /// </summary>
+    public void ForceRefresh()
+    {
+        if (player != null)
+        {
+            RebuildHearts(player.CurrentHearts, player.MaxHearts);
+        }
     }
 }

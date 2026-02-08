@@ -1,89 +1,82 @@
 using UnityEngine;
 
 /// <summary>
-/// Heilt den Spieler und/oder erhöht die maximalen HP.
+/// Heilt Herzen und/oder gibt zusätzliche Max-Herzen.
 /// </summary>
 [CreateAssetMenu(fileName = "HealingPowerUp", menuName = "PowerUps/Healing PowerUp")]
 public class HealingPowerUp : PowerUpBase
 {
     public enum HealingMode
     {
-        HealOnly,       // Nur heilen (kein permanenter Buff)
-        MaxHpOnly,      // Nur Max HP erhöhen
-        HealAndMaxHp    // Beides
+        HealOnly,           // Nur heilen (kein permanenter Buff)
+        MaxHeartOnly,       // Nur +1 Max Herz
+        HealAndMaxHeart     // Beides
     }
     
     [Header("Healing Settings")]
-    public HealingMode mode = HealingMode.HealAndMaxHp;
+    public HealingMode mode = HealingMode.HealAndMaxHeart;
+    // Heilmenge: minValue bis maxValue aus PowerUpBase
     
-    [Tooltip("Heilung als Prozent der Max HP (true) oder absoluter Wert (false)")]
-    public bool healIsPercentage = true;
-    
-    [Header("Max HP Bonus (wenn aktiviert)")]
-    [Tooltip("Max HP Erhöhung (absoluter Wert)")]
-    public float maxHpBonus = 10f;
+    [Header("Max Hearts")]
+    [Tooltip("Anzahl zusätzlicher Max-Herzen")]
+    public int maxHeartBonus = 1;
     
     public override float Apply(PlayerManager player)
     {
-        float healValue = GetRandomValue();
-        float appliedMaxHp = 0f;
+        int healAmount = Mathf.RoundToInt(GetRandomValue());
+        float appliedMaxHearts = 0f;
         
-        // Max HP erhöhen
-        if (mode == HealingMode.MaxHpOnly || mode == HealingMode.HealAndMaxHp)
+        // Max Herzen erhöhen
+        if (mode == HealingMode.MaxHeartOnly || mode == HealingMode.HealAndMaxHeart)
         {
-            player.maxHealth += (int)maxHpBonus;
-            appliedMaxHp = maxHpBonus;
+            player.AddMaxHeart(maxHeartBonus);
+            appliedMaxHearts = maxHeartBonus;
         }
         
         // Heilen
-        if (mode == HealingMode.HealOnly || mode == HealingMode.HealAndMaxHp)
+        if (mode == HealingMode.HealOnly || mode == HealingMode.HealAndMaxHeart)
         {
-            int healAmount;
-            if (healIsPercentage)
-            {
-                healAmount = Mathf.RoundToInt(player.maxHealth * (healValue / 100f));
-            }
-            else
-            {
-                healAmount = (int)healValue;
-            }
-            
-            player.Heal(healAmount);
+            player.HealHearts(healAmount);
         }
         
-        // Nur Max HP Änderung tracken (Heilung ist temporär)
-        return appliedMaxHp;
+        // Nur Max Hearts tracken (Heilung ist temporär)
+        return appliedMaxHearts;
     }
     
     public override void Remove(PlayerManager player, float appliedValue)
     {
-        // Nur Max HP wird zurückgesetzt
-        player.maxHealth -= (int)appliedValue;
+        // Max Hearts reduzieren
+        player.maxHearts -= (int)appliedValue;
+        player.maxHearts = Mathf.Max(player.maxHearts, 1); // Mindestens 1 Herz
         
-        // Current HP anpassen falls über Max
-        if (player.CurrentHealth > player.maxHealth)
+        // Current Hearts anpassen falls über Max
+        if (player.CurrentHearts > player.maxHearts)
         {
-            // Direkt setzen via Reflection oder public Methode...
-            // Für jetzt: Heal auf 0 um CurrentHealth zu clampen
-            player.Heal(0);
+            // Clamp durch HealHearts mit 0
+            player.HealHearts(0);
         }
     }
     
     public override string GetDescription(float value)
     {
+        int healAmount = Mathf.RoundToInt(value);
+        
         switch (mode)
         {
             case HealingMode.HealOnly:
-                return healIsPercentage 
-                    ? $"Heilt {value:F0}% deiner HP"
-                    : $"Heilt {value:F0} HP";
+                return healAmount == 1 
+                    ? "Heilt 1 Herz"
+                    : $"Heilt {healAmount} Herzen";
                     
-            case HealingMode.MaxHpOnly:
-                return $"Max HP +{maxHpBonus:F0}";
+            case HealingMode.MaxHeartOnly:
+                return maxHeartBonus == 1
+                    ? "+1 Max Herz"
+                    : $"+{maxHeartBonus} Max Herzen";
                 
-            case HealingMode.HealAndMaxHp:
-                string healStr = healIsPercentage ? $"{value:F0}%" : $"{value:F0}";
-                return $"Heilt {healStr} HP\nMax HP +{maxHpBonus:F0}";
+            case HealingMode.HealAndMaxHeart:
+                string healStr = healAmount == 1 ? "1 Herz" : $"{healAmount} Herzen";
+                string maxStr = maxHeartBonus == 1 ? "+1 Max Herz" : $"+{maxHeartBonus} Max Herzen";
+                return $"Heilt {healStr}\n{maxStr}";
                 
             default:
                 return description;
@@ -93,12 +86,11 @@ public class HealingPowerUp : PowerUpBase
     void Reset()
     {
         powerUpName = "Healing";
-        description = "Heilt dich und erhöht deine maximalen HP";
-        minValue = 20f;  // 20% Heilung
-        maxValue = 40f;  // 40% Heilung
-        maxHpBonus = 10f;
+        description = "Heilt dich und gibt ein zusätzliches Herz";
+        minValue = 1f;  // 1 Herz heilen
+        maxValue = 2f;  // 2 Herzen heilen
+        maxHeartBonus = 1;
         canStack = true;
-        mode = HealingMode.HealAndMaxHp;
-        healIsPercentage = true;
+        mode = HealingMode.HealAndMaxHeart;
     }
 }

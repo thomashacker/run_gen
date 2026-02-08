@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: JumpForcePowerUp
   m_EditorClassIdentifier: 
   powerUpName: Super Jump
-  description: "Erh\xF6ht deine Sprungkraft um {value}%"
+  description: Increases your jump power
   icon: {fileID: 0}
   canStack: 1
   minValue: 5

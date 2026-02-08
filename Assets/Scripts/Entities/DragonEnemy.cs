@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
@@ -13,6 +14,14 @@ public class DragonEnemy : MonoBehaviour
     
     [Header("Current State")]
     [SerializeField] private DragonState currentState = DragonState.Idle;
+    
+    [Header("Health")]
+    public int maxHealth = 3;
+    [SerializeField] private int currentHealth;
+    
+    // Events
+    public event Action OnDamaged;
+    public event Action OnDeath;
     
     [Header("Detection")]
     [Tooltip("Radius in dem der Spieler erkannt wird")]
@@ -44,6 +53,8 @@ public class DragonEnemy : MonoBehaviour
     public Vector3 deathDropOffset = Vector3.zero;
     [Tooltip("Effekt beim Tod (Particles, etc.)")]
     public GameObject deathEffectPrefab;
+    [Tooltip("Dauer der Death-Animation (danach wird zerstört)")]
+    public float deathAnimationDuration = 0.5f;
     
     // Private
     private Rigidbody2D rb;
@@ -53,9 +64,14 @@ public class DragonEnemy : MonoBehaviour
     private Vector2 aimDirection;
     private Vector2 lastKnownPlayerPosition; // Letzte Position wo Spieler sichtbar war
     private bool hasLastKnownPosition = false;
+    private bool isDead = false;
     
     // Public Access
     public DragonState CurrentState => currentState;
+    public int CurrentHealth => currentHealth;
+    public bool IsPlayerInRange => player != null && Vector2.Distance(transform.position, player.position) <= detectionRadius;
+    public bool IsOnCooldown => cooldownTimer > 0f;
+    public bool IsDead => isDead;
     
     void Awake()
     {
@@ -68,6 +84,9 @@ public class DragonEnemy : MonoBehaviour
         
         if (aimLaser != null)
             aimLaser.enabled = false;
+        
+        // Health initialisieren
+        currentHealth = maxHealth;
     }
     
     void Start()
@@ -80,7 +99,7 @@ public class DragonEnemy : MonoBehaviour
     
     void Update()
     {
-        if (player == null) return;
+        if (player == null || isDead) return;
         
         UpdateState();
         UpdateAimLaser();
@@ -257,10 +276,72 @@ public class DragonEnemy : MonoBehaviour
     }
     
     /// <summary>
-    /// Wird aufgerufen wenn der Spieler auf den Drachen springt
+    /// Wird aufgerufen wenn der Spieler auf den Drachen springt (Instakill)
     /// </summary>
     public void OnStomped()
     {
+        Die();
+    }
+    
+    /// <summary>
+    /// Bricht den aktuellen Angriff ab und startet Cooldown
+    /// </summary>
+    public void CancelAttack()
+    {
+        if (currentState == DragonState.Aim || currentState == DragonState.Attack)
+        {
+            StopAiming();
+            cooldownTimer = attackCooldown;
+            currentState = DragonState.Idle;
+            hasLastKnownPosition = false;
+        }
+    }
+    
+    /// <summary>
+    /// Fügt dem Dragon Schaden zu
+    /// </summary>
+    public void TakeDamage(int damage)
+    {
+        if (isDead) return;
+        if (damage <= 0) return;
+        
+        currentHealth -= damage;
+        currentHealth = Mathf.Max(currentHealth, 0);
+        
+        OnDamaged?.Invoke();
+        
+        Debug.Log($"[Dragon] Took {damage} damage. Health: {currentHealth}/{maxHealth}");
+        
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+    
+    /// <summary>
+    /// Dragon stirbt
+    /// </summary>
+    void Die()
+    {
+        if (isDead) return;
+        isDead = true;
+        
+        // Angriff abbrechen
+        StopAiming();
+        
+        // Alle Collider deaktivieren
+        foreach (var col in GetComponentsInChildren<Collider2D>())
+        {
+            col.enabled = false;
+        }
+        
+        // Rigidbody stoppen
+        rb.linearVelocity = Vector2.zero;
+        rb.simulated = false;
+        
+        // Event für Animator
+        OnDeath?.Invoke();
+        
         // Drop spawnen (z.B. Emerald)
         if (deathDropPrefab != null)
         {
@@ -273,7 +354,8 @@ public class DragonEnemy : MonoBehaviour
             Instantiate(deathEffectPrefab, transform.position, Quaternion.identity);
         }
         
-        Destroy(gameObject);
+        // Verzögert zerstören (nach Death Animation)
+        Destroy(gameObject, deathAnimationDuration);
     }
     
     void OnDrawGizmosSelected()

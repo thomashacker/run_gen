@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SpeedPowerUp
   m_EditorClassIdentifier: 
   powerUpName: Speed Boost
-  description: "Erh\xF6ht deine Bewegungsgeschwindigkeit um {value}%"
+  description: Increases your speed
   icon: {fileID: 0}
   canStack: 1
   minValue: 5

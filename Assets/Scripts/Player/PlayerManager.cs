@@ -66,18 +66,19 @@ public class PlayerManager : MonoBehaviour
     [Header("Wall Check (optional)")]
     public float wallCheckDistance = 0.1f;
     
-    [Header("Health")]
-    public int maxHealth = 100;
+    [Header("Hearts")]
+    [Tooltip("Startanzahl der Herzen")]
+    public int maxHearts = 3;
     public float invincibilityDuration = 1f;
     
-    // Health Events
-    public event Action<int, int> OnHealthChanged; // (currentHealth, maxHealth)
+    // Heart Events
+    public event Action<int, int> OnHeartsChanged; // (currentHearts, maxHearts)
     public event Action OnDamaged;
     public event Action OnHealed;
     
-    // Health Properties
-    public int CurrentHealth { get; private set; }
-    public float HealthPercent => (float)CurrentHealth / maxHealth;
+    // Heart Properties
+    public int CurrentHearts { get; private set; }
+    public int MaxHearts => maxHearts;
     public bool IsInvincible => invincibilityTimeLeft > 0f;
     
     private float invincibilityTimeLeft = 0f;
@@ -114,8 +115,8 @@ public class PlayerManager : MonoBehaviour
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
         
-        // Health initialisieren
-        CurrentHealth = maxHealth;
+        // Hearts initialisieren
+        CurrentHearts = maxHearts;
     }
 
     void Update()
@@ -358,25 +359,25 @@ public class PlayerManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Fügt dem Spieler Schaden zu. Bei 0 HP stirbt der Spieler.
+    /// Fügt dem Spieler Schaden zu (1 Herz pro Treffer). Bei 0 Herzen stirbt der Spieler.
     /// </summary>
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage = 1)
     {
         if (isDead) return;
         if (IsInvincible) return;
-        if (damage <= 0) return;
         
-        CurrentHealth -= damage;
-        CurrentHealth = Mathf.Max(CurrentHealth, 0);
+        // Jeder Treffer = 1 Herz weg (unabhängig vom damage-Wert)
+        CurrentHearts--;
+        CurrentHearts = Mathf.Max(CurrentHearts, 0);
         
         // Events auslösen
         OnDamaged?.Invoke();
-        OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
+        OnHeartsChanged?.Invoke(CurrentHearts, maxHearts);
         
-        Debug.Log($"[Player] Took {damage} damage. Health: {CurrentHealth}/{maxHealth}");
+        Debug.Log($"[Player] Lost 1 heart. Hearts: {CurrentHearts}/{maxHearts}");
         
-        // Tod bei 0 HP
-        if (CurrentHealth <= 0)
+        // Tod bei 0 Herzen
+        if (CurrentHearts <= 0)
         {
             Die();
             return;
@@ -387,46 +388,44 @@ public class PlayerManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Heilt den Spieler.
+    /// Heilt den Spieler um X Herzen.
     /// </summary>
-    public void Heal(int amount)
+    public void HealHearts(int amount)
     {
         if (isDead) return;
         if (amount <= 0) return;
         
-        int oldHealth = CurrentHealth;
-        CurrentHealth += amount;
-        CurrentHealth = Mathf.Min(CurrentHealth, maxHealth);
+        int oldHearts = CurrentHearts;
+        CurrentHearts += amount;
+        CurrentHearts = Mathf.Min(CurrentHearts, maxHearts);
         
-        if (CurrentHealth > oldHealth)
+        if (CurrentHearts > oldHearts)
         {
             OnHealed?.Invoke();
-            OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
-            Debug.Log($"[Player] Healed {amount}. Health: {CurrentHealth}/{maxHealth}");
+            OnHeartsChanged?.Invoke(CurrentHearts, maxHearts);
+            Debug.Log($"[Player] Healed {CurrentHearts - oldHearts} heart(s). Hearts: {CurrentHearts}/{maxHearts}");
         }
     }
     
     /// <summary>
-    /// Setzt Health auf Maximum zurück.
+    /// Erhöht die maximale Herzanzahl.
     /// </summary>
-    public void ResetHealth()
+    public void AddMaxHeart(int amount = 1)
     {
-        CurrentHealth = maxHealth;
+        maxHearts += amount;
+        OnHeartsChanged?.Invoke(CurrentHearts, maxHearts);
+        Debug.Log($"[Player] +{amount} max heart(s). Max: {maxHearts}");
+    }
+    
+    /// <summary>
+    /// Setzt Herzen auf Maximum zurück.
+    /// </summary>
+    public void ResetHearts()
+    {
+        CurrentHearts = maxHearts;
         invincibilityTimeLeft = 0f;
-        OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
+        OnHeartsChanged?.Invoke(CurrentHearts, maxHearts);
     }
-
-#if UNITY_EDITOR
-    void OnGUI()
-    {
-        GUILayout.BeginArea(new Rect(10, 10, 220, 100));
-        GUILayout.Label($"Grounded: {isGrounded}");
-        GUILayout.Label($"Velocity: {rb.linearVelocity}");
-        GUILayout.Label($"Wall Sliding: {isWallSliding}");
-        GUILayout.Label($"Wall: L={isTouchingWallLeft} R={isTouchingWallRight}");
-        GUILayout.EndArea();
-    }
-#endif
 
     void OnDrawGizmosSelected()
     {

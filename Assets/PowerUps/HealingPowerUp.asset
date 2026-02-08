@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HealingPowerUp
   m_EditorClassIdentifier: 
   powerUpName: Healing
-  description: "Heilt dich und erh\xF6ht deine maximalen HP"
+  description: Heals you and increases your health
   icon: {fileID: 0}
   canStack: 1
   minValue: 20

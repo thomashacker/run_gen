@@ -149,6 +149,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7615743626070824720}
   - component: {fileID: 563600936185782836}
+  - component: {fileID: 1639016786362328042}
   m_Layer: 8
   m_Name: Sprite
   m_TagString: Untagged
@@ -215,17 +216,39 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 721897777201717314, guid: 1a8464f13c509404db1701a8d0b069f0, type: 3}
+  m_Sprite: {fileID: 364456650, guid: 1a8464f13c509404db1701a8d0b069f0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.5, y: 0.5}
+  m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &1639016786362328042
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1290633879864503787}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 192ddb3f282274b46b3637d589d50567, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &4400723196531289917
 GameObject:
   m_ObjectHideFlags: 0
@@ -238,6 +261,7 @@ GameObject:
   - component: {fileID: 2505295808326210705}
   - component: {fileID: 5355793637991559783}
   - component: {fileID: 4173401564009762561}
+  - component: {fileID: 8302145218022241558}
   m_Layer: 8
   m_Name: Dragon
   m_TagString: Untagged
@@ -304,6 +328,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentState: 0
+  maxHealth: 3
+  currentHealth: 0
+  minDamageVelocity: 2
+  damagePerVelocity: 1
+  knockbackForce: 8
+  collisionDamageCooldown: 0.5
   detectionRadius: 7
   playerLayer:
     serializedVersion: 2
@@ -311,8 +341,8 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  aimDuration: 1.4
-  attackCooldown: 1.4
+  aimDuration: 1
+  attackCooldown: 2
   projectilePrefab: {fileID: 3795037294551504172, guid: 14cd61b712971204e839f6e94eab11fa, type: 3}
   projectileSpeed: 2.7
   firePoint: {fileID: 3873155927441871861}
@@ -359,7 +389,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.009108514, y: -0.06831315}
+  m_Offset: {x: -0.0017239451, y: -0.04982555}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -369,8 +399,31 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.8998073, y: 0.7813981}
+  m_Size: {x: 0.5794759, y: 0.79112875}
   m_EdgeRadius: 0
+--- !u!114 &8302145218022241558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4400723196531289917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 880d9d678be20604d9d1ddacd0e1e7ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dragon: {fileID: 5355793637991559783}
+  animator: {fileID: 1639016786362328042}
+  spriteRenderer: {fileID: 563600936185782836}
+  idleAnim: Dragon_Idle
+  targetingAnim: Dragon_Targeting
+  chargingStartAnim: Dragon_Charging_Start
+  chargingAnim: Dragon_Charging
+  damageAnim: Dragon_Damage
+  deathAnim: Dragon_Death
+  damageDuration: 0.3
+  chargingStartDuration: 0.2
 --- !u!1 &4628528369140557119
 GameObject:
   m_ObjectHideFlags: 0
