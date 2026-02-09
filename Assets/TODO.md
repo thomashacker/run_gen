@@ -1,17 +1,17 @@
-- Ein Main Tilemap und ein Main Grid
-- Wir bauen ein Chunk mit multiple passes
-- Ground Pass baut n seamless Ground Chunk
-- Platform Pass baut based on was da ist Platformen
-- Slope Pass baut based on was da ist nach Regeln die slopes, bzw tauscht tiles aus wo es passt
-- Ziel ist es skalierbar zu machen mit weiteren Pässen, die modular sind
-
-
-
-
-- Rogue Like Elemente
-- Man sammelt Geld/Erfahrung (Item Pass) und levelt auf bzw kann sich upgrades kaufen d
-- Red Bull (Speed Boost)
-- Höher Springen
-- +1 Sprung
-- Wall wird langsamer / Resettet
-- Reduce Gravity
+- Dont allow ramps in tight spaces
+- Fix platform heigh calculation by using offset based on thickness
+- Grassland Biome mit Tileset 
+- Background with Parralax
+- Biomes
+- +1 DoppelSprung
+- Bounciness
+- Highscore Calculation
+- Difficulty Meter based on Level und Distance + mehr rewards umso weiter man ist
+- Hindernisse:
+    - Traps * Spikes 
+    - Explosives
+- blue dragon
+- Character Selection
+- Fill out background tile when there is a platform down to the ground like a dirt wall e.g.
+- Better HUD
+- Music & Soundeffects
