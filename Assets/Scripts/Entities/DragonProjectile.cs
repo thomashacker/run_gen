@@ -12,6 +12,10 @@ public class DragonProjectile : MonoBehaviour
     public float lifetime = 5f;
     public LayerMask groundLayer;
     public LayerMask playerLayer;
+    [Tooltip("One-way platforms (e.g. Platform Effector tilemap) – projectile explodes on contact")]
+    public LayerMask platformLayer;
+    [Tooltip("Other projectiles (same layer as this) – projectile explodes when hitting another projectile")]
+    public LayerMask projectileLayer;
     
     [Header("Explosion")]
     [Tooltip("Explosion Prefab das bei Treffer gespawnt wird")]
@@ -83,12 +87,14 @@ public class DragonProjectile : MonoBehaviour
     bool IsValidTarget(GameObject obj)
     {
         int objLayer = obj.layer;
-        
-        // Prüft ob der Layer in groundLayer oder playerLayer enthalten ist
+
         bool isGround = ((1 << objLayer) & groundLayer) != 0;
         bool isPlayer = ((1 << objLayer) & playerLayer) != 0;
-        
-        return isGround || isPlayer;
+        bool isPlatform = ((1 << objLayer) & platformLayer) != 0;
+        bool isProjectile = ((1 << objLayer) & projectileLayer) != 0;
+        bool isOtherDragonProjectile = obj.GetComponent<DragonProjectile>() != null;
+
+        return isGround || isPlayer || isPlatform || isProjectile || isOtherDragonProjectile;
     }
     
     void HandleHit(Vector2 hitPoint)

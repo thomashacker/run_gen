@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8061219443030603613}
   - component: {fileID: 4607616853614404343}
   - component: {fileID: 3050692473910400294}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: DragonProjectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -173,6 +173,12 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
+  platformLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  projectileLayer:
+    serializedVersion: 2
+    m_Bits: 2048
   explosionPrefab: {fileID: 5169209301770355317, guid: 401dec909780d3b428c7ef4735eed96c, type: 3}
 --- !u!95 &3050692473910400294
 Animator:

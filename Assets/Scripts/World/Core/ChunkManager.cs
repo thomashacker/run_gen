@@ -5,6 +5,18 @@ using System.Collections.Generic;
 namespace WorldGeneration
 {
     /// <summary>
+    /// Infos eines Tiles an einer World-Position (für Debug-Anzeige).
+    /// </summary>
+    public class TileDebugInfo
+    {
+        public TileData tile;
+        public int chunkIndex;
+        public int localX, localY;
+        public int worldTileX, worldTileY;
+        public int surfaceHeightInColumn;
+    }
+    
+    /// <summary>
     /// Verwaltet die Chunk-Generierung und orchestriert alle Passes.
     /// </summary>
     public class ChunkManager : MonoBehaviour
@@ -205,6 +217,37 @@ namespace WorldGeneration
         public ChunkData GetChunk(int chunkIndex)
         {
             return chunks.TryGetValue(chunkIndex, out var chunk) ? chunk : null;
+        }
+        
+        /// <summary>
+        /// Tile-Infos an einer World-Position (für Debug-Anzeige). Null wenn kein Chunk oder außerhalb.
+        /// </summary>
+        public TileDebugInfo GetTileInfoAt(Vector3 worldPos)
+        {
+            if (context == null) return null;
+            float cx = context.cellSize.x;
+            float cy = context.cellSize.y;
+            int worldTileX = Mathf.FloorToInt(worldPos.x / cx);
+            int worldTileY = Mathf.FloorToInt(worldPos.y / cy);
+            int chunkIndex = context.WorldToChunkIndex(worldPos.x);
+            if (!chunks.TryGetValue(chunkIndex, out var chunk)) return null;
+            int localX = context.WorldToLocalX(worldPos.x, chunkIndex);
+            int localY = worldTileY;
+            if (!chunk.IsInBounds(localX, localY)) return null;
+            var tile = chunk[localX, localY];
+            int surfaceY = -1;
+            if (chunk.metadata.surfaceHeights != null && localX >= 0 && localX < chunk.metadata.surfaceHeights.Length)
+                surfaceY = chunk.metadata.surfaceHeights[localX];
+            return new TileDebugInfo
+            {
+                tile = tile,
+                chunkIndex = chunkIndex,
+                localX = localX,
+                localY = localY,
+                worldTileX = worldTileX,
+                worldTileY = worldTileY,
+                surfaceHeightInColumn = surfaceY
+            };
         }
         
         /// <summary>

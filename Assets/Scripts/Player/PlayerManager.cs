@@ -53,6 +53,15 @@ public class PlayerManager : MonoBehaviour
     [Tooltip("Maximale Fallgeschwindigkeit an der Wand")]
     public float wallSlideMaxSpeed = 3f;
 
+    [Header("Drop Through Platforms")]
+    [Tooltip("Allow dropping through one-way platforms (Platform Effector 2D) with S or Down")]
+    public bool enableDropThrough = true;
+    public KeyCode dropThroughKey = KeyCode.S;
+    [Tooltip("Layer of one-way platforms (for ground check). Leave empty if platform uses same layer as ground.")]
+    public LayerMask platformLayer;
+    [Tooltip("Time in seconds to ignore platform collision after pressing drop (so player clears the platform)")]
+    public float dropThroughIgnoreTime = 0.5f;
+
     [Header("Ground Check")]
     public LayerMask groundLayer;
     [Tooltip("Layer für Enemies auf denen man stehen/springen kann")]
@@ -102,6 +111,8 @@ public class PlayerManager : MonoBehaviour
     private int lastWallDirection;   // -1 = links, 1 = rechts, 0 = keine
     private float wallJumpInputLockTimeLeft;
     private bool isWallSliding;
+    private float dropThroughIgnoreTimeLeft;
+    private Collider2D ignoredPlatformCollider;
 
     public bool IsGrounded => isGrounded;
     public bool IsWallSliding => isWallSliding;
@@ -130,6 +141,25 @@ public class PlayerManager : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.Space))
             jumpCutThisFrame = true;
+
+        // Drop through platforms (S or Down): ignore the specific platform collider we're standing on (Platform Effector 2D)
+        if (enableDropThrough && dropThroughIgnoreTimeLeft <= 0f &&
+            (Input.GetKeyDown(dropThroughKey) || Input.GetKeyDown(KeyCode.DownArrow)) &&
+            isGrounded && TryGetPlatformWeAreStandingOn(out Collider2D platformCol))
+        {
+            Physics2D.IgnoreCollision(playerCollider, platformCol, true);
+            ignoredPlatformCollider = platformCol;
+            dropThroughIgnoreTimeLeft = dropThroughIgnoreTime;
+        }
+        if (dropThroughIgnoreTimeLeft > 0f)
+        {
+            dropThroughIgnoreTimeLeft -= Time.deltaTime;
+            if (dropThroughIgnoreTimeLeft <= 0f && ignoredPlatformCollider != null)
+            {
+                Physics2D.IgnoreCollision(playerCollider, ignoredPlatformCollider, false);
+                ignoredPlatformCollider = null;
+            }
+        }
         
         // Invincibility Timer
         if (invincibilityTimeLeft > 0f)
@@ -173,9 +203,9 @@ public class PlayerManager : MonoBehaviour
         Vector2 origin = groundCheck != null ? (Vector2)groundCheck.position : (Vector2)playerCollider.bounds.center;
         Vector2 boxSize = new Vector2(groundCheckWidth, 0.02f);
         
-        // Kombiniere Ground und Enemy Layer
-        LayerMask combinedLayers = groundLayer | enemyLayer;
-        
+        // Ground, Enemy and Platform (one-way) layers all count as ground when standing on them
+        LayerMask combinedLayers = groundLayer | enemyLayer | platformLayer;
+
         // Kleine Box, castet nach unten
         RaycastHit2D hit = Physics2D.BoxCast(
             origin,
@@ -187,6 +217,27 @@ public class PlayerManager : MonoBehaviour
         );
         
         isGrounded = hit.collider != null;
+    }
+
+    /// <summary>
+    /// Returns true if we're standing on a collider that has a PlatformEffector2D (one-way platform). Out parameter is that collider.
+    /// Uses the same layers as ground check so it works even when platform shares a layer with ground.
+    /// </summary>
+    bool TryGetPlatformWeAreStandingOn(out Collider2D platformCollider)
+    {
+        platformCollider = null;
+        Vector2 origin = groundCheck != null ? (Vector2)groundCheck.position : (Vector2)playerCollider.bounds.center;
+        Vector2 boxSize = new Vector2(groundCheckWidth, 0.02f);
+        LayerMask layers = groundLayer | enemyLayer | platformLayer;
+        RaycastHit2D hit = Physics2D.BoxCast(origin, boxSize, 0f, Vector2.down, groundCheckDistance * 2f, layers);
+        if (hit.collider == null) return false;
+        if (hit.collider.GetComponent<PlatformEffector2D>() != null ||
+            hit.collider.GetComponentInParent<PlatformEffector2D>() != null)
+        {
+            platformCollider = hit.collider;
+            return true;
+        }
+        return false;
     }
 
     void CheckWalls()

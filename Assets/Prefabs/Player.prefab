@@ -241,6 +241,12 @@ MonoBehaviour:
   wallCoyoteTime: 0.1
   enableWallSlide: 1
   wallSlideMaxSpeed: 2.5
+  enableDropThrough: 1
+  dropThroughKey: 115
+  platformLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  dropThroughIgnoreTime: 0.4
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -311,8 +317,10 @@ MonoBehaviour:
   fallAnim: Player_Fall
   wallAnim: Player_Wall
   deadAnim: Player_Dead
+  damageAnim: Player_Damage
   runThreshold: 0.1
   jumpThreshold: 0.1
+  damageDuration: 0.3
 --- !u!95 &5009173462813480533
 Animator:
   serializedVersion: 7
