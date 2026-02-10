@@ -4,7 +4,7 @@ namespace WorldGeneration
 {
     /// <summary>
     /// Fills the background tile matrix: for each column, finds the highest tile (ground OR platform),
-    /// then fills from y=0 up to that height - 1 so the top edge stays foreground-only.
+    /// then fills from y=0 up to that height (inclusive) all the way to the bottom.
     /// Must run after Ground and Platform passes so platforms are in the chunk when we compute the ceiling.
     /// </summary>
     public class BackgroundPass : GeneratorPassBase
@@ -26,11 +26,9 @@ namespace WorldGeneration
 
             for (int x = 0; x < chunk.width; x++)
             {
-                // Explicitly use highest Ground or Platform tile so we fill under both
                 int highestY = chunk.GetHighestSolidHeight(x);
-                int fillTop = highestY - 1; // one below top edge, fill everything down
-                if (fillTop >= 0)
-                    chunk.FillBackgroundColumn(x, 0, fillTop, bgData);
+                if (highestY >= 0)
+                    chunk.FillBackgroundColumn(x, 0, highestY, bgData);
             }
 
             return chunk;

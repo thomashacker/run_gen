@@ -126,6 +126,29 @@ namespace WorldGeneration
         }
         
         /// <summary>
+        /// 2D Fractal Noise (fBm) für Höhlen/Caves – (x,y) → [0,1]. Gleiche Logik wie GetFractalNoise, mit Y.
+        /// </summary>
+        public float GetFractalNoise2D(float x, float y, float frequency, int octaves = 3, float seedOffset = 0f)
+        {
+            float n = 0f;
+            float freq = frequency;
+            float amp = 1f;
+            float maxAmp = 0f;
+            float seedX = globalSeed + seedOffset;
+            float seedY = globalSeed * 0.7f + seedOffset * 1.3f;
+            for (int i = 0; i < octaves; i++)
+            {
+                float nx = x * freq + seedX + i * 17.3f;
+                float ny = y * freq + seedY + i * 31.7f;
+                n += Mathf.PerlinNoise(nx, ny) * amp;
+                maxAmp += amp;
+                freq *= 2f;
+                amp *= 0.5f;
+            }
+            return n / maxAmp;
+        }
+        
+        /// <summary>
         /// Holt die Oberflächen-Höhe an einer World-X Position.
         /// Berücksichtigt den aktuellen Chunk und Nachbarn.
         /// </summary>

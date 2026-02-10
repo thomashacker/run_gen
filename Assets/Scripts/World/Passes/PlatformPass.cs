@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace WorldGeneration
 {
     /// <summary>
-    /// Generates floating platforms: one per layer per chunk. Random length and thickness for the whole platform.
-    /// Platform top is a smooth height graph from fBm (multi-octave Perlin noise); tiles are filled below it by thickness, then placed above ground/reference.
+    /// Generates floating platforms: one per layer per chunk. Random length; platforms are always one tile thick.
+    /// Platform top is a smooth height graph from fBm (multi-octave Perlin noise).
     /// </summary>
     public class PlatformPass : GeneratorPassBase
     {
@@ -22,8 +22,6 @@ namespace WorldGeneration
             [Header("Dimensions (one value per platform)")]
             public int minLength = 4;
             public int maxLength = 12;
-            public int minThickness = 1;
-            public int maxThickness = 2;
 
             [Header("Noise (fBm for top curve)")]
             [Tooltip("Base frequency for the height graph; higher = more wavy")]
@@ -65,13 +63,13 @@ namespace WorldGeneration
                 int worldChunkStartX = chunk.chunkIndex * chunk.width;
                 if (worldChunkStartX + chunk.width <= layer.safeStartColumns) continue;
 
+                const int thickness = 1;
                 int length = Random.Range(layer.minLength, layer.maxLength + 1);
-                int thickness = Random.Range(layer.minThickness, layer.maxThickness + 1);
                 if (length > chunk.width) continue;
 
                 int placeX = Random.Range(0, chunk.width - length + 1);
                 int worldXBase = chunk.chunkIndex * chunk.width + placeX;
-                float[] topGraph = BuildTopGraph(length, thickness, worldXBase, layer, context, i);
+                float[] topGraph = BuildTopGraph(length, worldXBase, layer, context, i);
                 int relMinBottom = 0;
                 int relMaxTop = 0;
                 for (int c = 0; c < length; c++)
@@ -111,9 +109,11 @@ namespace WorldGeneration
         /// <summary>
         /// Builds the platform top curve using fBm (fractal Brownian motion): sum of Perlin octaves for a natural, terrain-like graph.
         /// worldXBase (chunk index * width + placeX) seeds the noise so each platform gets a different curve.
+        /// Thickness is always 1; variation is vertical (wavy top).
         /// </summary>
-        float[] BuildTopGraph(int length, int thickness, int worldXBase, PlatformLayer layer, GenerationContext context, int layerIndex)
+        float[] BuildTopGraph(int length, int worldXBase, PlatformLayer layer, GenerationContext context, int layerIndex)
         {
+            const int thickness = 1;
             float[] top = new float[length];
             float seedX = context.globalSeed + layer.noiseSeedOffset + layerIndex * 100f + worldXBase;
             float seedY = context.globalSeed * 0.7f + layerIndex * 50f;

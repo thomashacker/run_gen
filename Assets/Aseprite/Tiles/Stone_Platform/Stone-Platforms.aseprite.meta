@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 7ff07cf76e461974aba9372335c59375
+guid: ec424d2901816415e9561536c9455a62
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -123,9 +123,9 @@ ScriptedImporter:
     tessellationDetail: 0
     uvTransform: {x: 0, y: 0}
   animatedSpriteImportData:
-  - name: Emeralds
+  - name: Stone-Platforms
     originalName: 
-    pivot: {x: 0.5, y: 0}
+    pivot: {x: 0.5, y: -1.1333334}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     customData: 
@@ -133,9 +133,9 @@ ScriptedImporter:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 44
-      height: 16
-    spriteID: d5ad3dd29e3ff634ca5352ef39dbea7a
+      width: 128
+      height: 15
+    spriteID: f283009450d2d4e80af0ec2c9a1f852c
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -147,21 +147,21 @@ ScriptedImporter:
   spriteSheetImportData: []
   asepriteLayers:
   - layerIndex: 0
-    guid: 505210937
-    name: Emeralds
+    guid: -820876174
+    name: Stone-Platforms
     layerFlags: 0
     layerType: 0
     blendMode: 0
     cells:
-    - name: Emeralds
+    - name: Stone-Platforms
       frameIndex: 0
       additiveSortOrder: 0
       cellRect:
-        x: 2
-        y: 0
-        width: 44
-        height: 16
-      spriteId: d5ad3dd29e3ff634ca5352ef39dbea7a
+        x: 0
+        y: 17
+        width: 128
+        height: 15
+      spriteId: f283009450d2d4e80af0ec2c9a1f852c
     linkedCells: []
     parentIndex: -1
   platformSettings:
@@ -180,5 +180,5 @@ ScriptedImporter:
   generatePhysicsShape: 0
   secondarySpriteTextures: []
   spritePackingTag: 
-  canvasSize: {x: 48, y: 16}
-  previousTextureSize: {x: 64, y: 32}
+  canvasSize: {x: 128, y: 32}
+  previousTextureSize: {x: 256, y: 32}
