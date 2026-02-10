@@ -111,6 +111,11 @@ namespace WorldGeneration
             sb.AppendLine($"heightLevel: {info.tile.heightLevel}");
             if (info.surfaceHeightInColumn >= 0)
                 sb.AppendLine($"Surface (col): Y={info.surfaceHeightInColumn}");
+            sb.AppendLine("--- Background matrix ---");
+            sb.AppendLine($"HighestSolid (col): Y={info.highestSolidHeightInColumn}");
+            if (info.highestSolidHeightInColumn >= 0)
+                sb.AppendLine($"Fill range [0..{info.highestSolidHeightInColumn - 1}]: inRange={info.isInBackgroundFillRange}");
+            sb.AppendLine($"BG at [{info.localX},{info.localY}]: Empty={info.backgroundTile.IsEmpty}  BgType={info.backgroundTile.backgroundType}");
             return sb.ToString();
         }
     }

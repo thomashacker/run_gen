@@ -16,7 +16,7 @@ TagManager:
   - Enemy
   - Entities
   - Platform
-  - 
+  - Projectile
   - 
   - 
   - 
@@ -38,6 +38,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 129295631
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0

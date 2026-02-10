@@ -14,6 +14,12 @@ namespace WorldGeneration
         public int localX, localY;
         public int worldTileX, worldTileY;
         public int surfaceHeightInColumn;
+        /// <summary>Background matrix at this cell (for debugging BackgroundPass / ChunkRenderer).</summary>
+        public TileData backgroundTile;
+        /// <summary>Highest solid (ground or platform) Y in this column; -1 if none. Used for background fill ceiling.</summary>
+        public int highestSolidHeightInColumn;
+        /// <summary>Would background fill include this Y? (localY &lt;= highestSolidHeightInColumn - 1).</summary>
+        public bool isInBackgroundFillRange;
     }
     
     /// <summary>
@@ -238,6 +244,10 @@ namespace WorldGeneration
             int surfaceY = -1;
             if (chunk.metadata.surfaceHeights != null && localX >= 0 && localX < chunk.metadata.surfaceHeights.Length)
                 surfaceY = chunk.metadata.surfaceHeights[localX];
+            int highestSolid = chunk.GetHighestSolidHeight(localX);
+            var bgTile = chunk.GetBackgroundTile(localX, localY);
+            int fillTop = highestSolid >= 0 ? highestSolid - 1 : -1;
+            bool inFillRange = fillTop >= 0 && localY >= 0 && localY <= fillTop;
             return new TileDebugInfo
             {
                 tile = tile,
@@ -246,7 +256,10 @@ namespace WorldGeneration
                 localY = localY,
                 worldTileX = worldTileX,
                 worldTileY = worldTileY,
-                surfaceHeightInColumn = surfaceY
+                surfaceHeightInColumn = surfaceY,
+                backgroundTile = bgTile,
+                highestSolidHeightInColumn = highestSolid,
+                isInBackgroundFillRange = inFillRange
             };
         }
         

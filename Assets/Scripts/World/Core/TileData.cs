@@ -33,6 +33,18 @@ namespace WorldGeneration
     }
     
     /// <summary>
+    /// Art des Hintergrunds. Passes setzen nur den Typ; ChunkRenderer weist die echten Tiles zu (oder spawnt).
+    /// </summary>
+    public enum BackgroundType
+    {
+        None = 0,
+        Default = 1,
+        Dirt = 2,
+        Stone = 3,
+        Cave = 4,
+    }
+    
+    /// <summary>
     /// Daten für eine einzelne Zelle in der Chunk-Matrix.
     /// Erweiterbar für zukünftige Features.
     /// </summary>
@@ -44,9 +56,14 @@ namespace WorldGeneration
         
         /// <summary>
         /// Optional: Spezifisches Tile-Asset überschreiben.
-        /// Wenn null, wird das Default-Tile des Layers verwendet.
+        /// Bei Background: wird ignoriert – ChunkRenderer nutzt backgroundType zur Tile-Zuweisung.
         /// </summary>
         public TileBase overrideTile;
+        
+        /// <summary>
+        /// Hintergrund-Typ (nur bei layer == Background). ChunkRenderer mappt diesen auf TileBase oder Spawn.
+        /// </summary>
+        public BackgroundType backgroundType;
         
         /// <summary>
         /// Höhe relativ zum Chunk-Boden (nützlich für Passes).

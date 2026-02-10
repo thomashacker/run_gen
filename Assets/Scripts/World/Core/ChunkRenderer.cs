@@ -16,6 +16,8 @@ namespace WorldGeneration
         public Tilemap platformTilemap;
         [Tooltip("Tilemap für Hintergrund (optional)")]
         public Tilemap backgroundTilemap;
+        [Tooltip("Tilemap für Vordergrund-Overlay (z. B. Schatten). Wird an jeder Stelle befüllt, wo ein Hintergrund-Tile gesetzt wird.")]
+        public Tilemap foregroundTilemap;
         
         [Header("Ground Tiles")]
         public TileBase groundTile;
@@ -26,6 +28,14 @@ namespace WorldGeneration
         public TileBase platformTile;
         public TileBase platformRampUpTile;
         public TileBase platformRampDownTile;
+        
+        [Header("Background Tiles")]
+        [Tooltip("Maps BackgroundType to TileBase. Index = (int)BackgroundType (None=0, Default=1, Dirt=2, etc.). ChunkRenderer assigns tiles from this; passes only set the type in data.")]
+        public TileBase[] backgroundTilesByType;
+        [Tooltip("Fallback when type is None or index is out of range")]
+        public TileBase defaultBackgroundTile;
+        [Tooltip("Schatten-Tile (z. B. schwarz mit Transparenz). Wird auf foregroundTilemap gesetzt, wo immer ein Hintergrund-Tile ist.")]
+        public TileBase shadowTile;
         
         [Header("Settings")]
         [Tooltip("Tilemap für Plattformen wenn keine separate zugewiesen")]
@@ -61,9 +71,33 @@ namespace WorldGeneration
         
         /// <summary>
         /// Rendert einen kompletten Chunk zur Tilemap.
+        /// Hintergrund wird zuerst gerendert (hinter allem), dann Foreground (Ground/Platform).
         /// </summary>
         public void RenderChunk(ChunkData chunk)
         {
+            // 1) Hintergrund-Matrix zuerst (hinter allem) – Daten haben nur den Typ, wir weisen die echten Tiles zu
+            if (backgroundTilemap != null)
+            {
+                for (int x = 0; x < chunk.width; x++)
+                {
+                    int worldX = chunk.LocalToWorldX(x);
+                    for (int y = 0; y < chunk.height; y++)
+                    {
+                        TileData bg = chunk.GetBackgroundTile(x, y);
+                        if (bg.IsEmpty) continue;
+                        TileBase tile = GetBackgroundTileForType(bg.backgroundType);
+                        if (tile != null)
+                        {
+                            Vector3Int pos = new Vector3Int(worldX, y, 0);
+                            backgroundTilemap.SetTile(pos, tile);
+                            if (foregroundTilemap != null && shadowTile != null)
+                                foregroundTilemap.SetTile(pos, shadowTile);
+                        }
+                    }
+                }
+            }
+            
+            // 2) Foreground (Ground, Platform, etc.)
             for (int x = 0; x < chunk.width; x++)
             {
                 int worldX = chunk.LocalToWorldX(x);
@@ -116,13 +150,32 @@ namespace WorldGeneration
             }
             else
             {
-                // Bei Air/Gap alle Tilemaps clearen an dieser Position
-                ClearTile(worldX, worldY);
+                // Bei Air/Gap nur Foreground (Ground/Platform) clearen – Background-Matrix bleibt unberührt
+                ClearForegroundTile(worldX, worldY);
             }
         }
         
         /// <summary>
-        /// Löscht Tiles an einer Position auf allen Tilemaps.
+        /// Löscht nur Ground- und Platform-Tilemap an einer Position (für Air/Gap im Haupt-Layer).
+        /// Hintergrund-Tilemap wird nicht angefasst, damit die Background-Matrix sichtbar bleibt.
+        /// </summary>
+        void ClearForegroundTile(int worldX, int worldY)
+        {
+            Vector3Int pos = new Vector3Int(worldX, worldY, 0);
+            if (groundTilemap != null)
+            {
+                groundTilemap.SetTile(pos, null);
+                groundTilemap.RefreshTile(pos);
+            }
+            if (platformTilemap != null && platformTilemap != groundTilemap)
+            {
+                platformTilemap.SetTile(pos, null);
+                platformTilemap.RefreshTile(pos);
+            }
+        }
+        
+        /// <summary>
+        /// Löscht Tiles an einer Position auf allen Tilemaps (z. B. beim Entfernen eines Chunks).
         /// </summary>
         public void ClearTile(int worldX, int worldY, bool debug = false)
         {
@@ -150,6 +203,11 @@ namespace WorldGeneration
             {
                 backgroundTilemap.SetTile(pos, null);
                 backgroundTilemap.RefreshTile(pos);
+            }
+            if (foregroundTilemap != null)
+            {
+                foregroundTilemap.SetTile(pos, null);
+                foregroundTilemap.RefreshTile(pos);
             }
         }
         
@@ -224,6 +282,21 @@ namespace WorldGeneration
                 default:
                     return null;
             }
+        }
+        
+        /// <summary>
+        /// Weist den Hintergrund-Typ aus den Daten einem TileBase zu (oder später: Spawn).
+        /// </summary>
+        TileBase GetBackgroundTileForType(BackgroundType backgroundType)
+        {
+            if (backgroundType == BackgroundType.None)
+                return null;
+            if (backgroundTilesByType == null || backgroundTilesByType.Length == 0)
+                return defaultBackgroundTile;
+            int i = (int)backgroundType;
+            if (i < 0 || i >= backgroundTilesByType.Length)
+                return defaultBackgroundTile;
+            return backgroundTilesByType[i] != null ? backgroundTilesByType[i] : defaultBackgroundTile;
         }
         
         /// <summary>

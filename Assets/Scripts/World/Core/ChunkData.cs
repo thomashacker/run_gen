@@ -25,9 +25,14 @@ namespace WorldGeneration
         public int height;
         
         /// <summary>
-        /// Die Tile-Matrix [x, y].
+        /// Die Tile-Matrix [x, y] (Ground, Platform, Entities, etc.).
         /// </summary>
         private TileData[,] tiles;
+        
+        /// <summary>
+        /// Hintergrund-Tile-Matrix [x, y]. Rein dekorativ, kein Collider, wird hinter allem gerendert.
+        /// </summary>
+        private TileData[,] backgroundTiles;
         
         /// <summary>
         /// Zusätzliche Metadaten die Passes speichern können.
@@ -42,6 +47,7 @@ namespace WorldGeneration
             this.width = width;
             this.height = height;
             this.tiles = new TileData[width, height];
+            this.backgroundTiles = new TileData[width, height];
             this.metadata = new ChunkMetadata();
             
             // Mit Air initialisieren
@@ -77,6 +83,37 @@ namespace WorldGeneration
             set => this[pos.x, pos.y] = value;
         }
         
+        /// <summary>
+        /// Holt das Hintergrund-Tile an (x, y). Air wenn außerhalb oder leer.
+        /// </summary>
+        public TileData GetBackgroundTile(int x, int y)
+        {
+            if (!IsInBounds(x, y))
+                return TileData.Air;
+            return backgroundTiles[x, y];
+        }
+        
+        /// <summary>
+        /// Setzt das Hintergrund-Tile an (x, y).
+        /// </summary>
+        public void SetBackgroundTile(int x, int y, TileData data)
+        {
+            if (IsInBounds(x, y))
+                backgroundTiles[x, y] = data;
+        }
+        
+        /// <summary>
+        /// Füllt eine Spalte im Hintergrund von bottom bis top (inklusive).
+        /// </summary>
+        public void FillBackgroundColumn(int x, int bottom, int top, TileData data)
+        {
+            for (int y = bottom; y <= top && y < height; y++)
+            {
+                if (y >= 0)
+                    SetBackgroundTile(x, y, data);
+            }
+        }
+        
         // === METHODS ===
         
         /// <summary>
@@ -97,6 +134,7 @@ namespace WorldGeneration
                 for (int y = 0; y < height; y++)
                 {
                     tiles[x, y] = TileData.Air;
+                    backgroundTiles[x, y] = TileData.Air;
                 }
             }
             metadata = new ChunkMetadata();
@@ -130,6 +168,24 @@ namespace WorldGeneration
             for (int y = height - 1; y >= 0; y--)
             {
                 if (tiles[localX, y].IsWalkable)
+                    return y;
+            }
+            return -1;
+        }
+        
+        /// <summary>
+        /// Highest Y in this column that has a solid Ground or Platform tile (for background fill).
+        /// Explicitly includes both layers so background is drawn under ground and under platforms.
+        /// </summary>
+        public int GetHighestSolidHeight(int localX)
+        {
+            if (localX < 0 || localX >= width)
+                return -1;
+            for (int y = height - 1; y >= 0; y--)
+            {
+                var t = tiles[localX, y];
+                if (t.IsEmpty) continue;
+                if ((t.layer == TileLayer.Ground || t.layer == TileLayer.Platform) && t.IsWalkable)
                     return y;
             }
             return -1;
@@ -173,6 +229,7 @@ namespace WorldGeneration
                 for (int y = 0; y < height; y++)
                 {
                     copy.tiles[x, y] = tiles[x, y];
+                    copy.backgroundTiles[x, y] = backgroundTiles[x, y];
                 }
             }
             copy.metadata = metadata.Clone();
