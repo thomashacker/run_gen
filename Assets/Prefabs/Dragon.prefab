@@ -330,24 +330,20 @@ MonoBehaviour:
   currentState: 0
   maxHealth: 3
   currentHealth: 0
-  minDamageVelocity: 2
-  damagePerVelocity: 1
-  knockbackForce: 8
-  collisionDamageCooldown: 0.5
-  detectionRadius: 7
+  detectionRadius: 3.5
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  aimDuration: 1
+  aimDuration: 1.5
   attackCooldown: 2
   projectilePrefab: {fileID: 3795037294551504172, guid: 14cd61b712971204e839f6e94eab11fa, type: 3}
-  projectileSpeed: 2.7
+  projectileSpeed: 2
   firePoint: {fileID: 3873155927441871861}
   aimLaser: {fileID: 5587980602780018252}
-  laserMaxLength: 10
+  laserMaxLength: 5
   laserHitLayers:
     serializedVersion: 2
     m_Bits: 64
@@ -355,6 +351,7 @@ MonoBehaviour:
   deathDropPrefab: {fileID: 7364691822147532462, guid: 977f9af1e9c36604581161fcb6bb9efc, type: 3}
   deathDropOffset: {x: 0, y: 0, z: 0}
   deathEffectPrefab: {fileID: 0}
+  deathAnimationDuration: 0.5
 --- !u!61 &4173401564009762561
 BoxCollider2D:
   m_ObjectHideFlags: 0
