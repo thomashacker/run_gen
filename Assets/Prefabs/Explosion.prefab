@@ -124,16 +124,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tileDestructionRadius: 1
-  damageRadius: 0.5
+  damageRadius: 1
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
-  damage: 25
+  damage: 1
   instantKill: 0
   enableKnockback: 1
   knockbackRadius: 1.5
   knockbackForce: 10
   knockbackUpwardBias: 0.2
   explosionDelay: 0
-  lifetime: 5
+  lifetime: 4
   debugMode: 0

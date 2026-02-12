@@ -88,7 +88,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.009805679
+        value: 0.0049533844
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -330,7 +330,7 @@ MonoBehaviour:
   currentState: 0
   maxHealth: 3
   currentHealth: 0
-  detectionRadius: 3.5
+  detectionRadius: 6
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
@@ -340,7 +340,7 @@ MonoBehaviour:
   aimDuration: 1.5
   attackCooldown: 2
   projectilePrefab: {fileID: 3795037294551504172, guid: 14cd61b712971204e839f6e94eab11fa, type: 3}
-  projectileSpeed: 2
+  projectileSpeed: 4
   firePoint: {fileID: 3873155927441871861}
   aimLaser: {fileID: 5587980602780018252}
   laserMaxLength: 5
@@ -386,7 +386,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.0017239451, y: -0.04982555}
+  m_Offset: {x: 0.082431555, y: -0.13398126}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -396,7 +396,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.5794759, y: 0.79112875}
+  m_Size: {x: 1.0518322, y: 1.5023785}
   m_EdgeRadius: 0
 --- !u!114 &8302145218022241558
 MonoBehaviour:
@@ -519,7 +519,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.39}
+  m_Offset: {x: 0.013573527, y: 0.66146886}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -529,7 +529,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.43, y: 0.11}
+  m_Size: {x: 1.3041308, y: 0.109999955}
   m_EdgeRadius: 0
 --- !u!114 &192520017632813299
 MonoBehaviour:

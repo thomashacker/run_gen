@@ -52,6 +52,15 @@ namespace WorldGeneration
         [Header("References")]
         public Transform player;
         
+        [Header("Live Reload")]
+        [Tooltip("Welt automatisch neu generieren wenn Pass-Parameter im Inspector geändert werden")]
+        public bool enableLiveReload = false;
+        [Tooltip("Taste für manuelle Regeneration")]
+        public KeyCode reloadKey = KeyCode.F5;
+        [Tooltip("Verzögerung nach letzter Änderung bevor regeneriert wird (Sekunden)")]
+        [Range(0.1f, 2f)]
+        public float reloadDelay = 0.5f;
+        
         // Singleton
         public static ChunkManager Instance { get; private set; }
         
@@ -61,6 +70,10 @@ namespace WorldGeneration
         private int leftmostChunkIndex = 0;
         private int rightmostChunkIndex = -1;
         private Grid grid;
+        
+        // Live Reload
+        private bool isDirty = false;
+        private float dirtyTimestamp = 0f;
         
         // Public Access
         public GenerationContext Context => context;
@@ -119,6 +132,21 @@ namespace WorldGeneration
         
         void Update()
         {
+            // Manuelle Regeneration per Hotkey (immer verfügbar)
+            if (Input.GetKeyDown(reloadKey))
+            {
+                RegenerateAllChunks();
+                return;
+            }
+            
+            // Auto-Reload: Nach Debounce-Delay regenerieren
+            if (enableLiveReload && isDirty && Time.unscaledTime - dirtyTimestamp >= reloadDelay)
+            {
+                isDirty = false;
+                RegenerateAllChunks();
+                return;
+            }
+            
             if (GameManager.Instance != null && !GameManager.Instance.IsPlaying())
                 return;
             
@@ -299,6 +327,97 @@ namespace WorldGeneration
         public void RemovePass(GeneratorPassBase pass)
         {
             passes.Remove(pass);
+        }
+        
+        /// <summary>
+        /// Wird von Passes aufgerufen wenn ihre Parameter im Inspector geändert werden.
+        /// Startet den Debounce-Timer für Live Reload.
+        /// </summary>
+        public void MarkDirtyForReload()
+        {
+            isDirty = true;
+            dirtyTimestamp = Time.unscaledTime;
+        }
+        
+        /// <summary>
+        /// Regeneriert die gesamte sichtbare Welt.
+        /// Löscht alle Chunks, setzt Pass-States zurück und generiert neu.
+        /// </summary>
+        [ContextMenu("Regenerate World")]
+        public void RegenerateAllChunks()
+        {
+            if (!Application.isPlaying) return;
+            
+            isDirty = false;
+            
+            Debug.Log("[ChunkManager] Regenerating world...");
+            
+            // 1) Spawned Entities aufräumen (Enemies, Emeralds, etc.)
+            foreach (var pass in passes)
+            {
+                if (pass is EnemyPass enemyPass)
+                    enemyPass.ClearAllEnemies();
+                else if (pass is EmeraldPass emeraldPass)
+                    emeraldPass.ClearAllEmeralds();
+            }
+            
+            // 2) Alle Chunk-Tiles löschen
+            foreach (var kvp in chunks)
+            {
+                if (chunkRenderer != null)
+                    chunkRenderer.ClearChunk(kvp.Value);
+            }
+            chunks.Clear();
+            
+            // 3) Safe Start Area löschen (Tiles die außerhalb von Chunks gerendert wurden)
+            if (chunkRenderer != null)
+            {
+                for (int x = -safeStartColumns; x < 0; x++)
+                {
+                    for (int y = 0; y < chunkHeight; y++)
+                    {
+                        chunkRenderer.ClearTile(x, y);
+                    }
+                }
+            }
+            
+            // 4) Kontext zurücksetzen (Seed beibehalten für deterministische Regeneration)
+            float preservedSeed = context != null ? context.globalSeed : 0f;
+            InitializeContext();
+            context.globalSeed = preservedSeed;
+            
+            // 5) Alle Passes re-initialisieren (interne States zurücksetzen)
+            foreach (var pass in passes)
+            {
+                if (pass != null)
+                    pass.Initialize(context);
+            }
+            
+            // 6) Safe Start Area neu generieren
+            GenerateSafeStartArea();
+            
+            // 7) Chunk-Tracking zurücksetzen und neu generieren
+            leftmostChunkIndex = 0;
+            rightmostChunkIndex = -1;
+            UpdateChunks();
+            
+            // 8) Collider aktualisieren
+            if (chunkRenderer != null)
+                chunkRenderer.RefreshColliders();
+            
+            Debug.Log("[ChunkManager] World regenerated.");
+        }
+        
+        /// <summary>
+        /// OnValidate auf ChunkManager selbst - auch Änderungen an Chunk/Seed Settings triggern Reload.
+        /// </summary>
+        void OnValidate()
+        {
+            if (!Application.isPlaying) return;
+            if (enableLiveReload)
+            {
+                MarkDirtyForReload();
+            }
         }
         
         void OnDrawGizmosSelected()

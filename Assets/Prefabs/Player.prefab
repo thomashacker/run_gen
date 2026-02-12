@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 1106639318301133617}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.029, y: -0.324, z: 0}
+  m_LocalPosition: {x: 0.029, y: -0.645, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -155,6 +155,7 @@ GameObject:
   - component: {fileID: 8180909762023815991}
   - component: {fileID: 3378373392132881832}
   - component: {fileID: 5009173462813480533}
+  - component: {fileID: 8260438646038343243}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -172,7 +173,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.55250806, y: -1.8204104, z: 0.0961548}
-  m_LocalScale: {x: 0.75, y: 0.76, z: 1}
+  m_LocalScale: {x: 0.75, y: 0.75, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8003884461704356416}
@@ -218,45 +219,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aad9eee349f560342a7dd02f1879ee26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 4
-  acceleration: 3
-  deceleration: 10
-  jumpForce: 6
-  gravityRiseHold: 0.85
-  gravityFall: 2.2
-  jumpCutGravityMult: 1.7
-  maxFallSpeed: 40
+  moveSpeed: 6
+  acceleration: 5
+  deceleration: 12
+  jumpForce: 7
+  gravityRiseHold: 0.8
+  gravityFall: 2.3
+  jumpCutGravityMult: 1.6
+  maxFallSpeed: 35
   coyoteTime: 0.1
   jumpBufferTime: 0.15
   jumpHangThreshold: 0.5
   jumpHangGravityMult: 0.5
   jumpHangAccelMult: 1.2
   fastFallGravityMult: 1.4
-  airAcceleration: 4
-  airDeceleration: 8
+  airAcceleration: 5
+  airDeceleration: 5
   enableWallJump: 1
-  wallJumpForceY: 6
-  wallJumpForceX: 1.5
-  wallJumpInputLockTime: 0.25
+  wallJumpForceY: 8
+  wallJumpForceX: 1.8
+  wallJumpInputLockTime: 0.3
   wallCoyoteTime: 0.1
   enableWallSlide: 1
-  wallSlideMaxSpeed: 2.5
+  wallSlideMaxSpeed: 3
   enableDropThrough: 1
   dropThroughKey: 115
   platformLayer:
     serializedVersion: 2
     m_Bits: 1024
-  dropThroughIgnoreTime: 0.4
+  dropThroughIgnoreTime: 0.3
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
   enemyLayer:
     serializedVersion: 2
     m_Bits: 256
-  groundCheckWidth: 0.15
-  groundCheckDistance: 0.1
+  groundCheckWidth: 0.5
+  groundCheckDistance: 0.2
   groundCheck: {fileID: 5497585448126900847}
-  wallCheckDistance: 0.1
+  wallCheckDistance: 0.15
   maxHearts: 3
   invincibilityDuration: 1
 --- !u!70 &8180909762023815991
@@ -294,7 +295,7 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0.020000001, y: -0.00853316}
-  m_Size: {x: 0.37, y: 0.6}
+  m_Size: {x: 0.8, y: 1.28}
   m_Direction: 0
 --- !u!114 &3378373392132881832
 MonoBehaviour:
@@ -343,3 +344,25 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &8260438646038343243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5088844245669577972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9b5471b60722d34881cb8738beb243e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mineKey: 101
+  damagePerHit: 1
+  gridOffset: {x: -0.22, y: -0.22}
+  keyRight: 100
+  keyLeft: 97
+  keyUp: 119
+  keyDown: 115
+  playerAnimator: {fileID: 3378373392132881832}
+  playerCollider: {fileID: 8180909762023815991}
+  debugMode: 1

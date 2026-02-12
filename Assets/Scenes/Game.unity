@@ -539,7 +539,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &198963835
 Transform:
   m_ObjectHideFlags: 0
@@ -573,27 +573,27 @@ MonoBehaviour:
   - name: Lower Platforms
     enabled: 1
     minHeightAboveGround: 1
-    minLength: 5
-    maxLength: 10
-    noiseFrequency: 0.1061
+    minLength: 10
+    maxLength: 20
+    noiseFrequency: 0.2
     noiseSeedOffset: 0
-    heightVariation: 1
-    octaves: 3
-    persistence: 0.5
-    spawnDensity: 0.3
+    heightVariation: 0
+    octaves: 2
+    persistence: 0.3
+    spawnDensity: 0.7
     safeStartColumns: 20
   - name: Higher Platforms
     enabled: 1
-    minHeightAboveGround: 2
-    minLength: 10
-    maxLength: 20
-    noiseFrequency: 0.0784
+    minHeightAboveGround: 3
+    minLength: 5
+    maxLength: 10
+    noiseFrequency: 0.02
     noiseSeedOffset: 0
-    heightVariation: 1
-    octaves: 4
-    persistence: 0.5
-    spawnDensity: 0.6
-    safeStartColumns: 50
+    heightVariation: 0
+    octaves: 2
+    persistence: 0.3
+    spawnDensity: 0.5
+    safeStartColumns: 20
 --- !u!1 &236433970
 GameObject:
   m_ObjectHideFlags: 0
@@ -744,15 +744,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   passName: Ground Pass
   enabled: 1
-  baseHeight: 12
-  minHeight: 3
-  maxHeight: 40
-  noiseFrequency: 0.05
+  baseHeight: 30
+  minHeight: 1
+  maxHeight: 50
+  noiseFrequency: 0.01
   noiseOctaves: 3
   noiseSeedOffset: 0
   maxSlopePerColumn: 2
-  plateauChance: 0.3
-  minPlateauLength: 3
+  plateauChance: 0.5
+  minPlateauLength: 5
   maxPlateauLength: 8
 --- !u!1 &371309214
 GameObject:
@@ -1393,7 +1393,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 4.6875
+  orthographic size: 5.625
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1438,18 +1438,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 113841790}
   smoothSpeed: 4
-  offset: {x: 3, y: 0}
-  minVisibleY: 0
+  offset: {x: 1.5, y: 0.5}
+  followY: 1
+  fixedYPosition: 0
+  minVisibleY: 1
   maxY: 50
-  enableLookAhead: 0
-  lookAheadAmount: 2
-  lookAheadSpeed: 1
   enableDynamicZoom: 1
-  baseZoom: 2.5
-  baseHeight: 10
-  zoomPerUnit: 0.2
-  minZoom: 1
-  maxZoom: 7
+  baseZoom: 4
+  baseHeight: 5
+  zoomPerUnit: 0.25
+  minZoom: 3.5
+  maxZoom: 10
   zoomSpeed: 2
 --- !u!114 &537536389
 MonoBehaviour:
@@ -1458,15 +1457,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 537536383}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c88f5cead0c0b2a4eb05b5900433f8d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_ComponentVersion: 1
   m_AssetsPPU: 96
-  m_RefResolutionX: 960
-  m_RefResolutionY: 600
+  m_RefResolutionX: 1920
+  m_RefResolutionY: 1080
   m_CropFrame: 0
   m_GridSnapping: 1
   m_FilterMode: 0
@@ -1491,7 +1490,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &613720177
 Transform:
   m_ObjectHideFlags: 0
@@ -2013,6 +2012,7 @@ GameObject:
   - component: {fileID: 776347550}
   - component: {fileID: 776347549}
   - component: {fileID: 776347551}
+  - component: {fileID: 776347552}
   m_Layer: 0
   m_Name: WorldGenerator
   m_TagString: Untagged
@@ -2081,7 +2081,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04b35bd3225881c41951731055fd5f3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chunkWidth: 30
+  chunkWidth: 100
   chunkHeight: 50
   chunksAhead: 6
   chunksBehind: 6
@@ -2099,6 +2099,9 @@ MonoBehaviour:
   - {fileID: 1200892819}
   chunkRenderer: {fileID: 776347549}
   player: {fileID: 113841790}
+  enableLiveReload: 0
+  reloadKey: 286
+  reloadDelay: 0.5
 --- !u!114 &776347551
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2118,6 +2121,23 @@ MonoBehaviour:
   padding: 8
   textColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   backgroundColor: {r: 0, g: 0, b: 0, a: 0.7}
+--- !u!114 &776347552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 776347547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0db8bab6455a57d41b63b3cfaacef69c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultTileHealth: 3
+  hitEffectDuration: 0.15
+  hitEffectScale: 1.3
+  hitEffectAlpha: 0.8
+  debugMode: 0
 --- !u!1 &784894413
 GameObject:
   m_ObjectHideFlags: 0
@@ -2262,10 +2282,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   passName: Gap Pass
   enabled: 1
-  gapChance: 0.08
-  minGapWidth: 2
-  maxGapWidth: 4
-  minCooldown: 10
+  gapChance: 0.02
+  minGapWidth: 3
+  maxGapWidth: 5
+  minCooldown: 20
   safeStartColumns: 15
   gapBottomOffset: 0
 --- !u!1 &991109741
@@ -2747,7 +2767,7 @@ Grid:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1191090826}
   m_Enabled: 1
-  m_CellSize: {x: 0.5, y: 0.5, z: 0}
+  m_CellSize: {x: 1, y: 1, z: 0}
   m_CellGap: {x: 0, y: 0, z: 0}
   m_CellLayout: 0
   m_CellSwizzle: 0
@@ -3312,13 +3332,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   passName: Cave Pass
   enabled: 1
-  noiseFrequency: 0.04
-  noiseOctaves: 3
+  noiseFrequency: 0.05
+  noiseOctaves: 1
   noiseSeedOffset: 100
-  caveThreshold: 0.42
+  caveThreshold: 0.4
   minFloorThickness: 1
-  minBottomRows: 7
+  minBottomRows: 8
   safeStartColumns: 20
+  removeDeadEnds: 1
 --- !u!1 &1402006332
 GameObject:
   m_ObjectHideFlags: 0
@@ -3558,7 +3579,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1501298595
 Transform:
   m_ObjectHideFlags: 0
@@ -4505,6 +4526,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5322816068076853802, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8260438646038343243, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: debugMode
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

@@ -8,15 +8,12 @@ public class CameraManager : MonoBehaviour
     [Header("Follow Settings")]
     public float smoothSpeed = 5f;           // Wie smooth die Kamera folgt (höher = schneller)
     public Vector2 offset = new Vector2(3f, 1f);  // Offset vom Spieler (X = voraus, Y = über)
+    public bool followY = true;              // Ob die Kamera dem Spieler auf der Y-Achse folgt
+    public float fixedYPosition = 5f;        // Feste Y-Position wenn followY deaktiviert ist
     
     [Header("Vertical Limits")]
     public float minVisibleY = 0f;           // Untere sichtbare Grenze (Kamera zeigt nichts darunter)
     public float maxY = 50f;                 // Maximale Y-Position der Kamera
-    
-    [Header("Look Ahead (Optional)")]
-    public bool enableLookAhead = true;      // Kamera schaut etwas voraus wenn Spieler sich bewegt
-    public float lookAheadAmount = 2f;       // Wie weit vorausschauen
-    public float lookAheadSpeed = 3f;        // Wie schnell die Kamera vorausschaut
     
     [Header("Dynamic Zoom")]
     public bool enableDynamicZoom = true;    // Zoom basierend auf Spielerhöhe
@@ -27,7 +24,6 @@ public class CameraManager : MonoBehaviour
     public float maxZoom = 12f;              // Maximaler Zoom (max rausgezoomt)
     public float zoomSpeed = 3f;             // Wie smooth der Zoom ist
     
-    private float currentLookAhead = 0f;
     private Vector3 velocity = Vector3.zero;
     private Camera cam;
     private float targetZoom;
@@ -72,18 +68,6 @@ public class CameraManager : MonoBehaviour
         // === X-POSITION ===
         float targetX = target.position.x + offset.x;
         
-        // Optional: Look Ahead basierend auf Spieler-Bewegung
-        if (enableLookAhead)
-        {
-            Rigidbody2D rb = target.GetComponent<Rigidbody2D>();
-            if (rb != null && Mathf.Abs(rb.linearVelocity.x) > 0.1f)
-            {
-                float targetLookAhead = Mathf.Sign(rb.linearVelocity.x) * lookAheadAmount;
-                currentLookAhead = Mathf.Lerp(currentLookAhead, targetLookAhead, lookAheadSpeed * Time.deltaTime);
-                targetX += currentLookAhead;
-            }
-        }
-        
         // === DYNAMIC ZOOM ===
         if (enableDynamicZoom && cam != null)
         {
@@ -98,15 +82,23 @@ public class CameraManager : MonoBehaviour
         }
         
         // === Y-POSITION ===
-        float targetY = target.position.y + offset.y;
-        
-        // Minimum Y basierend auf Kamera-Höhe berechnen
-        // Die untere Kante der Kamera soll nicht unter minVisibleY gehen
-        float cameraHalfHeight = cam != null ? cam.orthographicSize : 5f;
-        float minCameraY = minVisibleY + cameraHalfHeight;
-        
-        // Y-Position clampen
-        targetY = Mathf.Clamp(targetY, minCameraY, maxY);
+        float targetY;
+        if (followY)
+        {
+            targetY = target.position.y + offset.y;
+            
+            // Minimum Y basierend auf Kamera-Höhe berechnen
+            // Die untere Kante der Kamera soll nicht unter minVisibleY gehen
+            float cameraHalfHeight = cam != null ? cam.orthographicSize : 5f;
+            float minCameraY = minVisibleY + cameraHalfHeight;
+            
+            // Y-Position clampen
+            targetY = Mathf.Clamp(targetY, minCameraY, maxY);
+        }
+        else
+        {
+            targetY = fixedYPosition;
+        }
         
         // === SMOOTH FOLLOW ===
         Vector3 targetPosition = new Vector3(
@@ -142,14 +134,20 @@ public class CameraManager : MonoBehaviour
             cam.orthographicSize = currentZoom;
         }
         
-        float cameraHalfHeight = cam != null ? cam.orthographicSize : 5f;
-        float minCameraY = minVisibleY + cameraHalfHeight;
-        
         float targetX = target.position.x + offset.x;
-        float targetY = Mathf.Clamp(target.position.y + offset.y, minCameraY, maxY);
+        float targetY;
+        if (followY)
+        {
+            float cameraHalfHeight = cam != null ? cam.orthographicSize : 5f;
+            float minCameraY = minVisibleY + cameraHalfHeight;
+            targetY = Mathf.Clamp(target.position.y + offset.y, minCameraY, maxY);
+        }
+        else
+        {
+            targetY = fixedYPosition;
+        }
         
         transform.position = new Vector3(targetX, targetY, transform.position.z);
         velocity = Vector3.zero;
-        currentLookAhead = 0f;
     }
 }

@@ -31,6 +31,7 @@ public class PlayerAnimator : MonoBehaviour
     private Rigidbody2D rb;
     private string currentAnim = "";
     private bool facingRight = true;
+    public bool IsFacingRight => facingRight;
     private float damageTimer = 0f;
     
     void Awake()

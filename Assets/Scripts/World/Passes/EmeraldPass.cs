@@ -141,7 +141,7 @@ namespace WorldGeneration
                 
                 // World Position (nutzt ChunkUtilities)
                 Vector3 spawnPos = ChunkUtilities.CalculateSpawnPosition(
-                    chunk, context, localX, surfaceY, heightAboveSurface, centerInTile: true);
+                    chunk, context, localX, surfaceY, heightAboveSurface, centerInTile: false);
                 
                 GameObject emerald = Object.Instantiate(selectedType.prefab, spawnPos, Quaternion.identity, emeraldParent);
                 spawnedEmeralds.Add(emerald);

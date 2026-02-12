@@ -52,6 +52,19 @@ namespace WorldGeneration
         /// Debug-Visualisierung im Scene View.
         /// </summary>
         protected virtual void OnDrawGizmosSelected() { }
+        
+        /// <summary>
+        /// Wird von Unity aufgerufen wenn Werte im Inspector geändert werden.
+        /// Benachrichtigt den ChunkManager, damit Live Reload ausgelöst werden kann.
+        /// </summary>
+        protected virtual void OnValidate()
+        {
+            if (!Application.isPlaying) return;
+            if (ChunkManager.Instance != null)
+            {
+                ChunkManager.Instance.MarkDirtyForReload();
+            }
+        }
     }
     
     /// <summary>
