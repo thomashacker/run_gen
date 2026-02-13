@@ -1369,7 +1369,7 @@ Transform:
   m_GameObject: {fileID: 537536383}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 14.21, z: -10}
+  m_LocalPosition: {x: 0, y: 20.630001, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1476,7 +1476,77 @@ MonoBehaviour:
   enemies:
   - name: Dragon
     prefab: {fileID: 4400723196531289917, guid: 392ffea1e58d7c04bb7177680a8617af, type: 3}
-    spawnChance: 0.05
+    spawnProbability:
+      mode: 0
+      peakDistance: 500
+      spread: 300
+      maxValue: 0.1
+      minValue: 0.01
+      customCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1000
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    spawnOnGround: 1
+    spawnOnPlatforms: 1
+    spaceLeft: 2
+    spaceRight: 2
+    spaceUp: 2
+    spaceUpLeft: 1
+    spaceUpRight: 1
+    minDistanceBetween: 12
+    spawnYOffset: 0.5
+  - name: Blue Dragon
+    prefab: {fileID: 2026488828181906429, guid: 266bf0500db614848a02c36a7249cde6, type: 3}
+    spawnProbability:
+      mode: 0
+      peakDistance: 1000
+      spread: 200
+      maxValue: 0.01
+      minValue: 0.001
+      customCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1000
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
     spawnOnGround: 1
     spawnOnPlatforms: 1
     spaceLeft: 2
@@ -2030,11 +2100,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chunkWidth: 100
   chunkHeight: 25
-  chunksAhead: 6
-  chunksBehind: 6
+  chunksAhead: 5
+  chunksBehind: 5
   seed: 0
   safeStartColumns: 10
-  safeStartHeight: 10
+  safeStartHeight: 15
   passes:
   - {fileID: 369028187}
   - {fileID: 1393083437}
@@ -2115,8 +2185,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   zoneType: 0
-  zoneWidth: 500
-  zoneHeight: 2
+  zoneWidth: 1000
+  zoneHeight: 3
   startDelay: 5
   startSpeed: 2
   acceleration: 0.5
@@ -3557,13 +3627,74 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   passName: Emerald Pass
   enabled: 1
-  emeraldTypes:
-  - name: Green Emerald
+  emeraldEntries:
+  - name: Green Emeralds
     prefab: {fileID: 2305673116768932384, guid: 4fc7e003d00c79249a29e83663e6dc69, type: 3}
-    spawnWeight: 0.8
-  lineSpawnChance: 0.08
-  minLength: 3
-  maxLength: 8
+    weight:
+      mode: 0
+      peakDistance: 250
+      spread: 250
+      maxValue: 1
+      minValue: 0.01
+      customCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1000
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  - name: Blue Emeralds
+    prefab: {fileID: 7364691822147532462, guid: 977f9af1e9c36604581161fcb6bb9efc, type: 3}
+    weight:
+      mode: 0
+      peakDistance: 1000
+      spread: 200
+      maxValue: 1
+      minValue: 0.01
+      customCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1000
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  lineSpawnChance: 0.06
+  minLength: 4
+  maxLength: 10
   heightAboveSurface: 0.5
   minDistanceBetweenLines: 10
   safeStartColumns: 20
@@ -4112,8 +4243,8 @@ Tilemap:
       e13: 7.64e-43
       e20: 2.505145e+33
       e21: -2.0328811e-19
-      e22: 2.7295435e-29
-      e23: 3.1761436e-18
+      e22: 2.7289898e-29
+      e23: 1.8251985e-17
       e30: 4.5914e-41
       e31: 7.64e-43
       e32: 7.68e-43
@@ -4442,7 +4573,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5322816068076853802, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 14.32
+      value: 20.74
       objectReference: {fileID: 0}
     - target: {fileID: 5322816068076853802, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
       propertyPath: m_LocalPosition.z

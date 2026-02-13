@@ -1,70 +1,10 @@
 fileFormatVersion: 2
-guid: 35500f76b0513384cbc7679329f85c01
+guid: 7511e453b0887034f8f80e3d230fb2ee
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1375878538719861351
-    second: Blue_Dragon_0
-  - first:
-      213: -8367099176168669192
-    second: Blue_Dragon_1
-  - first:
-      213: 4040623304468212138
-    second: Blue_Dragon_2
-  - first:
-      213: 2908452506066719701
-    second: Blue_Dragon_3
-  - first:
-      213: 7811723831025566083
-    second: Blue_Dragon_4
-  - first:
-      213: -3184827877840627807
-    second: Blue_Dragon_5
-  - first:
-      213: 4864942981922027444
-    second: Blue_Dragon_6
-  - first:
-      213: -7637382883306506031
-    second: Blue_Dragon_7
-  - first:
-      213: -8392720033282845525
-    second: Blue_Dragon_8
-  - first:
-      213: 5308366647695624957
-    second: Blue_Dragon_9
-  - first:
-      213: -2167421143060518504
-    second: Blue_Dragon_10
-  - first:
-      213: -3307442641968046483
-    second: Blue_Dragon_11
-  - first:
-      213: 2738263238220067892
-    second: Blue_Dragon_12
-  - first:
-      213: -3176332345429703508
-    second: Blue_Dragon_13
-  - first:
-      213: 4016823131829859163
-    second: Blue_Dragon_14
-  - first:
-      213: -3445024139114829301
-    second: Blue_Dragon_15
-  - first:
-      213: -4025723166918926728
-    second: Blue_Dragon_16
-  - first:
-      213: -740815811199772715
-    second: Blue_Dragon_17
-  - first:
-      213: 6345211638743441546
-    second: Blue_Dragon_18
-  - first:
-      213: 4086317919367078528
-    second: Blue_Dragon_19
-  - first:
-      213: 6583450352361964269
-    second: Blue_Dragon_20
+      213: -1888403094248864914
+    second: Dragon_A_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -132,7 +72,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 512
     resizeAlgorithm: 1
     textureFormat: -1
     textureCompression: 0
@@ -173,7 +113,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Blue_Dragon_0
+      name: Dragon_A_0
       rect:
         serializedVersion: 2
         x: 0
@@ -186,16 +126,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 995e48d32c5e7ece0800000000000000
-      internalID: -1375878538719861351
+      spriteID: bc40735fa0f7fd8438dd748dfe96e50e
+      internalID: -1812343819
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_1
+      name: Dragon_A_1
       rect:
         serializedVersion: 2
         x: 32
@@ -208,16 +148,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 8ffb00c41a712eb80800000000000000
-      internalID: -8367099176168669192
+      spriteID: 29380eb2d367c9f4299480877e379145
+      internalID: 712857666
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_2
+      name: Dragon_A_2
       rect:
         serializedVersion: 2
         x: 0
@@ -230,16 +170,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: aa92efdbc7d231830800000000000000
-      internalID: 4040623304468212138
+      spriteID: 5ebe1514a666f0c4ebb2de2a77621f0e
+      internalID: 364456650
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_3
+      name: Dragon_A_3
       rect:
         serializedVersion: 2
         x: 32
@@ -252,16 +192,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 5d393360526ec5820800000000000000
-      internalID: 2908452506066719701
+      spriteID: 25c9b899d45cea044b3bedf65bbcbaad
+      internalID: 163442422
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_4
+      name: Dragon_A_4
       rect:
         serializedVersion: 2
         x: 0
@@ -274,16 +214,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 3818bbf9f61d86c60800000000000000
-      internalID: 7811723831025566083
+      spriteID: c70982c691a6f4746b340f8d71b2772a
+      internalID: -2024720724
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_5
+      name: Dragon_A_5
       rect:
         serializedVersion: 2
         x: 32
@@ -296,16 +236,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 1a75c864be73dc3d0800000000000000
-      internalID: -3184827877840627807
+      spriteID: ad8c9a2fd97c06d4b8743c79adb56337
+      internalID: -1720010894
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_6
+      name: Dragon_A_6
       rect:
         serializedVersion: 2
         x: 0
@@ -318,16 +258,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 4b7fdf1dddfb38340800000000000000
-      internalID: 4864942981922027444
+      spriteID: aea0cf5eec506594999aadd2cd2456ca
+      internalID: 2125278525
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_7
+      name: Dragon_A_7
       rect:
         serializedVersion: 2
         x: 32
@@ -340,16 +280,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 1d8fdd27bb0920690800000000000000
-      internalID: -7637382883306506031
+      spriteID: f0616172295fe0e429429b4990b3f447
+      internalID: 950355658
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_8
+      name: Dragon_A_8
       rect:
         serializedVersion: 2
         x: 0
@@ -362,16 +302,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: ba41fd4a891178b80800000000000000
-      internalID: -8392720033282845525
+      spriteID: 3a3ef933751295943806c1948da4cee6
+      internalID: 1100031727
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_9
+      name: Dragon_A_9
       rect:
         serializedVersion: 2
         x: 32
@@ -384,16 +324,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: dfacd65575b1ba940800000000000000
-      internalID: 5308366647695624957
+      spriteID: fed2c6e78a482564e8fabfa37c381bdc
+      internalID: 1474475210
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_10
+      name: Dragon_A_10
       rect:
         serializedVersion: 2
         x: 0
@@ -406,16 +346,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 899e43134f5cbe1e0800000000000000
-      internalID: -2167421143060518504
+      spriteID: 59d7270bc8b663542acbaf2e2268a6ff
+      internalID: 1152311229
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_11
+      name: Dragon_A_11
       rect:
         serializedVersion: 2
         x: 32
@@ -428,16 +368,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d6ed382d07a9912d0800000000000000
-      internalID: -3307442641968046483
+      spriteID: 53c757ee2c2dae3478b6affed57808d2
+      internalID: 736012365
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_12
+      name: Dragon_A_12
       rect:
         serializedVersion: 2
         x: 0
@@ -450,16 +390,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 4343e9f38e3400620800000000000000
-      internalID: 2738263238220067892
+      spriteID: a07b312c09178d341b691ad133095ef4
+      internalID: -2024658644
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_13
+      name: Dragon_A_13
       rect:
         serializedVersion: 2
         x: 32
@@ -472,16 +412,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: ca4441e8f866be3d0800000000000000
-      internalID: -3176332345429703508
+      spriteID: 40109f55613addd4c909415a2fba0044
+      internalID: -1916177124
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_14
+      name: Dragon_A_14
       rect:
         serializedVersion: 2
         x: 0
@@ -494,16 +434,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: b537a4a3b5f9eb730800000000000000
-      internalID: 4016823131829859163
+      spriteID: 092e21b470e1c904b969bfc6df44530e
+      internalID: -1409500083
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Blue_Dragon_15
+      name: Dragon_A_15
       rect:
         serializedVersion: 2
         x: 32
@@ -518,8 +458,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7abf6f0deaebefb4e800d5204320d0c3
-      internalID: -380431513
+      spriteID: 637877c4fc5095045aa0099d5391e62c
+      internalID: -826952051
       vertices: []
       indices: 
       edges: []
@@ -528,7 +468,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 368806db5145f6d439f7be978d551eec
+    spriteID: 6b5f637ed0a2eff4a983c8fcc21e2aae
     internalID: 0
     vertices: []
     indices: 
@@ -538,22 +478,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Blue_Dragon_0: -1375878538719861351
-      Blue_Dragon_1: -8367099176168669192
-      Blue_Dragon_10: -2167421143060518504
-      Blue_Dragon_11: -3307442641968046483
-      Blue_Dragon_12: 2738263238220067892
-      Blue_Dragon_13: -3176332345429703508
-      Blue_Dragon_14: 4016823131829859163
-      Blue_Dragon_15: -380431513
-      Blue_Dragon_2: 4040623304468212138
-      Blue_Dragon_3: 2908452506066719701
-      Blue_Dragon_4: 7811723831025566083
-      Blue_Dragon_5: -3184827877840627807
-      Blue_Dragon_6: 4864942981922027444
-      Blue_Dragon_7: -7637382883306506031
-      Blue_Dragon_8: -8392720033282845525
-      Blue_Dragon_9: 5308366647695624957
+      Dragon_A_0: -1812343819
+      Dragon_A_1: 712857666
+      Dragon_A_10: 1152311229
+      Dragon_A_11: 736012365
+      Dragon_A_12: -2024658644
+      Dragon_A_13: -1916177124
+      Dragon_A_14: -1409500083
+      Dragon_A_15: -826952051
+      Dragon_A_2: 364456650
+      Dragon_A_3: 163442422
+      Dragon_A_4: -2024720724
+      Dragon_A_5: -1720010894
+      Dragon_A_6: 2125278525
+      Dragon_A_7: 950355658
+      Dragon_A_8: 1100031727
+      Dragon_A_9: 1474475210
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

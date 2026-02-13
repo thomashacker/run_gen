@@ -3,8 +3,10 @@ using System;
 
 /// <summary>
 /// Steuert Dragon-Animationen basierend auf DragonEnemy States.
+/// Unterstützt Salve-Angriffe: Charging_Start beim Salve-Beginn,
+/// zurück zu Targeting nach dem letzten Schuss.
 /// </summary>
-public class EnemyAnimator : MonoBehaviour
+public class DragonAnimator : MonoBehaviour
 {
     [Header("References (auto-filled if empty)")]
     public DragonEnemy dragon;
@@ -29,6 +31,7 @@ public class EnemyAnimator : MonoBehaviour
     private float damageTimer = 0f;
     private float chargingStartTimer = 0f;
     private bool wasAiming = false;
+    private bool wasAttacking = false;
     private bool isDying = false;
     
     void Awake()
@@ -138,13 +141,35 @@ public class EnemyAnimator : MonoBehaviour
             wasAiming = false;
         }
         
-        // Priorität 4: Targeting (Spieler in Range, aber Cooldown oder keine Sicht)
+        // Priorität 4: Attack State (Salve läuft)
+        if (state == DragonEnemy.DragonState.Attack)
+        {
+            // Charging_Start erneut abspielen wenn Salve beginnt
+            if (!wasAttacking)
+            {
+                wasAttacking = true;
+                chargingStartTimer = chargingStartDuration;
+            }
+            
+            if (chargingStartTimer > 0f)
+            {
+                return chargingStartAnim;
+            }
+            
+            return chargingAnim;
+        }
+        else
+        {
+            wasAttacking = false;
+        }
+        
+        // Priorität 5: Targeting (Spieler in Range, aber Cooldown oder keine Sicht)
         if (playerInRange && (isOnCooldown || state == DragonEnemy.DragonState.Idle))
         {
             return targetingAnim;
         }
         
-        // Priorität 5: Idle
+        // Priorität 6: Idle
         return idleAnim;
     }
     

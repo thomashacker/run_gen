@@ -179,21 +179,27 @@ namespace WorldGeneration
                 emeraldEntries.Add(new SpawnableEntry
                 {
                     name = "Green Emerald",
-                    mode = DistributionMode.Gaussian,
-                    peakDistance = 250f,
-                    spread = 200f,
-                    maxWeight = 1f,
-                    minWeight = 0.05f
+                    weight = new DistanceCurve
+                    {
+                        mode = DistributionMode.Gaussian,
+                        peakDistance = 250f,
+                        spread = 200f,
+                        maxValue = 1f,
+                        minValue = 0.05f
+                    }
                 });
                 
                 emeraldEntries.Add(new SpawnableEntry
                 {
                     name = "Blue Emerald",
-                    mode = DistributionMode.Gaussian,
-                    peakDistance = 1000f,
-                    spread = 400f,
-                    maxWeight = 1f,
-                    minWeight = 0.05f
+                    weight = new DistanceCurve
+                    {
+                        mode = DistributionMode.Gaussian,
+                        peakDistance = 1000f,
+                        spread = 400f,
+                        maxValue = 1f,
+                        minValue = 0.05f
+                    }
                 });
             }
         }

@@ -32,11 +32,18 @@ public class DragonEnemy : MonoBehaviour
     [Header("Attack")]
     [Tooltip("Zeit die der Drache zielt bevor er schießt")]
     public float aimDuration = 2f;
-    [Tooltip("Abklingzeit nach Schuss")]
+    [Tooltip("Abklingzeit nach Salve")]
     public float attackCooldown = 1.5f;
     public GameObject projectilePrefab;
     public float projectileSpeed = 8f;
     public Transform firePoint;
+    
+    [Header("Salve (Burst)")]
+    [Tooltip("Anzahl Projektile pro Salve")]
+    [Min(1)]
+    public int projectilesPerSalve = 1;
+    [Tooltip("Verzögerung zwischen einzelnen Schüssen in der Salve (Sekunden)")]
+    public float salveDelay = 0.3f;
     
     [Header("Aim Laser")]
     public LineRenderer aimLaser;
@@ -65,6 +72,10 @@ public class DragonEnemy : MonoBehaviour
     private Vector2 lastKnownPlayerPosition; // Letzte Position wo Spieler sichtbar war
     private bool hasLastKnownPosition = false;
     private bool isDead = false;
+    
+    // Salve Runtime
+    private int salveRemaining;    // Verbleibende Schüsse in der Salve
+    private float salveTimer;      // Timer bis zum nächsten Schuss
     
     // Public Access
     public DragonState CurrentState => currentState;
@@ -114,16 +125,6 @@ public class DragonEnemy : MonoBehaviour
     
     void UpdateState()
     {
-        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
-        bool canSeePlayer = CanSeePlayer();
-        
-        // Wenn wir den Spieler sehen, Position speichern
-        if (canSeePlayer)
-        {
-            lastKnownPlayerPosition = player.position;
-            hasLastKnownPosition = true;
-        }
-        
         // Cooldown Timer
         if (cooldownTimer > 0)
             cooldownTimer -= Time.deltaTime;
@@ -132,6 +133,16 @@ public class DragonEnemy : MonoBehaviour
         {
             case DragonState.Idle:
                 // Spieler erkannt und in Reichweite?
+                float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+                bool canSeePlayer = CanSeePlayer();
+                
+                // Spielerposition merken (auch im Idle für den nächsten Aim)
+                if (canSeePlayer)
+                {
+                    lastKnownPlayerPosition = player.position;
+                    hasLastKnownPosition = true;
+                }
+                
                 if (distanceToPlayer <= detectionRadius && canSeePlayer && cooldownTimer <= 0)
                 {
                     StartAiming();
@@ -139,48 +150,81 @@ public class DragonEnemy : MonoBehaviour
                 break;
                 
             case DragonState.Aim:
-                // Ziel-Richtung updaten
-                Vector2 targetPosition;
-                
-                if (canSeePlayer)
-                {
-                    // Spieler sichtbar → direkt auf ihn zielen
-                    targetPosition = player.position;
-                }
-                else if (hasLastKnownPosition)
-                {
-                    // Spieler nicht sichtbar → auf letzte bekannte Position zielen
-                    targetPosition = lastKnownPlayerPosition;
-                }
-                else
+                // Ziel-Richtung updaten (gleiche Logik wie in Attack für Re-Targeting)
+                if (!UpdateAimDirection())
                 {
                     // Kein Ziel → zurück zu Idle
                     StopAiming();
                     break;
                 }
                 
-                // Ziel-Richtung mit Delay (Trägheit)
-                Vector2 targetDir = (targetPosition - (Vector2)transform.position).normalized;
-                aimDirection = Vector2.Lerp(aimDirection, targetDir, Time.deltaTime * 3f);
-                
                 aimTimer -= Time.deltaTime;
                 if (aimTimer <= 0)
                 {
+                    // Salve starten
                     currentState = DragonState.Attack;
-                    FireProjectile();
+                    salveRemaining = projectilesPerSalve;
+                    salveTimer = 0f; // Erster Schuss sofort
                 }
                 break;
                 
             case DragonState.Attack:
-                // Zurück zu Idle nach Schuss
-                StopAiming();
-                cooldownTimer = attackCooldown;
-                currentState = DragonState.Idle;
+                // Ziel-Richtung weiter updaten (Re-Targeting während der Salve)
+                UpdateAimDirection();
                 
-                // Letzte Position zurücksetzen nach Schuss
-                hasLastKnownPosition = false;
+                salveTimer -= Time.deltaTime;
+                if (salveTimer <= 0f && salveRemaining > 0)
+                {
+                    FireProjectile();
+                    salveRemaining--;
+                    salveTimer = salveDelay;
+                }
+                
+                // Salve fertig → zurück zu Idle
+                if (salveRemaining <= 0)
+                {
+                    StopAiming();
+                    cooldownTimer = attackCooldown;
+                    currentState = DragonState.Idle;
+                    hasLastKnownPosition = false;
+                }
                 break;
         }
+    }
+    
+    /// <summary>
+    /// Aktualisiert die Zielrichtung basierend auf Spielerposition.
+    /// Wird in Aim und Attack State verwendet (Re-Targeting während Salve).
+    /// </summary>
+    /// <returns>true wenn ein Ziel vorhanden ist, false wenn kein Ziel.</returns>
+    bool UpdateAimDirection()
+    {
+        bool canSeePlayer = CanSeePlayer();
+        
+        if (canSeePlayer)
+        {
+            lastKnownPlayerPosition = player.position;
+            hasLastKnownPosition = true;
+        }
+        
+        Vector2 targetPosition;
+        
+        if (canSeePlayer)
+        {
+            targetPosition = player.position;
+        }
+        else if (hasLastKnownPosition)
+        {
+            targetPosition = lastKnownPlayerPosition;
+        }
+        else
+        {
+            return false;
+        }
+        
+        Vector2 targetDir = (targetPosition - (Vector2)transform.position).normalized;
+        aimDirection = Vector2.Lerp(aimDirection, targetDir, Time.deltaTime * 3f);
+        return true;
     }
     
     void StartAiming()
@@ -235,8 +279,8 @@ public class DragonEnemy : MonoBehaviour
     {
         if (spriteRenderer == null) return;
         
-        // Basierend auf Zielrichtung
-        if (currentState == DragonState.Aim && Mathf.Abs(aimDirection.x) > 0.1f)
+        // Basierend auf Zielrichtung (Aim und Attack, da Re-Targeting während Salve)
+        if ((currentState == DragonState.Aim || currentState == DragonState.Attack) && Mathf.Abs(aimDirection.x) > 0.1f)
         {
             spriteRenderer.flipX = aimDirection.x < 0;
         }

@@ -261,7 +261,7 @@ GameObject:
   - component: {fileID: 2505295808326210705}
   - component: {fileID: 5355793637991559783}
   - component: {fileID: 4173401564009762561}
-  - component: {fileID: 8302145218022241558}
+  - component: {fileID: 1245407722307454557}
   m_Layer: 8
   m_Name: Dragon
   m_TagString: Untagged
@@ -342,6 +342,8 @@ MonoBehaviour:
   projectilePrefab: {fileID: 3795037294551504172, guid: 14cd61b712971204e839f6e94eab11fa, type: 3}
   projectileSpeed: 4
   firePoint: {fileID: 3873155927441871861}
+  projectilesPerSalve: 1
+  salveDelay: 0.3
   aimLaser: {fileID: 5587980602780018252}
   laserMaxLength: 5
   laserHitLayers:
@@ -398,7 +400,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.0518322, y: 1.5023785}
   m_EdgeRadius: 0
---- !u!114 &8302145218022241558
+--- !u!114 &1245407722307454557
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -407,7 +409,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4400723196531289917}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 880d9d678be20604d9d1ddacd0e1e7ce, type: 3}
+  m_Script: {fileID: 11500000, guid: a0f53322a4b12fc4c9afc581fe81c329, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   dragon: {fileID: 5355793637991559783}

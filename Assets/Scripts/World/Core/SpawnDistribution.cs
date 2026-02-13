@@ -10,18 +10,121 @@ namespace WorldGeneration
     {
         /// <summary>Gauß-Kurve (Glockenkurve) mit Peak, Breite und Minimum.</summary>
         Gaussian,
+        /// <summary>Steigt sanft von Min auf Max und bleibt dort. Ideal für "ab Distanz X erscheinen".</summary>
+        RisingPlateau,
         /// <summary>Freie AnimationCurve für volle Kontrolle über die Gewichtskurve.</summary>
         CustomCurve
     }
 
     /// <summary>
-    /// Ein spawbares Objekt mit distanzbasierter Gewichtung.
-    /// Wiederverwendbar für Emeralds, Enemies, Items, Power-Ups, etc.
+    /// Wiederverwendbare distanzbasierte Kurve.
+    /// Kann überall eingebettet werden wo ein Wert von der Distanz abhängen soll:
+    /// Spawn-Wahrscheinlichkeit, Gewichtung, Intensität, etc.
     /// 
-    /// Gaussian-Modus: Glockenkurve mit konfigurierbarem Peak, Breite und Minimum.
+    /// Gaussian-Modus: Glockenkurve mit Peak, Breite, Min und Max.
+    /// RisingPlateau-Modus: Steigt sanft an bis peakDistance, bleibt dann auf maxValue.
+    ///   spread bestimmt die Breite der Übergangszone VOR dem Peak.
+    ///   Vor (peakDistance - spread): minValue. Ab peakDistance: maxValue.
     /// CustomCurve-Modus: Freie AnimationCurve für beliebige Formen.
+    /// </summary>
+    [System.Serializable]
+    public class DistanceCurve
+    {
+        [Tooltip("Gaussian = Glockenkurve. RisingPlateau = steigt an und bleibt. CustomCurve = freie AnimationCurve.")]
+        public DistributionMode mode = DistributionMode.Gaussian;
+        
+        [Header("Gaussian / RisingPlateau")]
+        [Tooltip("Distanz (in Tiles) wo der Wert sein Maximum erreicht.")]
+        public float peakDistance = 250f;
+        
+        [Tooltip("Gaussian: Standardabweichung der Glockenkurve. RisingPlateau: Breite der Übergangszone VOR dem Peak.")]
+        public float spread = 200f;
+        
+        [Tooltip("Maximaler Wert am Peak der Kurve.")]
+        public float maxValue = 1f;
+        
+        [Tooltip("Minimaler Wert — sinkt nie unter diesen Wert.")]
+        [Range(0f, 1f)]
+        public float minValue = 0.05f;
+        
+        [Header("Custom Curve")]
+        [Tooltip("X-Achse = Distanz (in Tiles), Y-Achse = Wert. Wird nur benutzt wenn Mode = CustomCurve.")]
+        public AnimationCurve customCurve = AnimationCurve.EaseInOut(0f, 0f, 1000f, 1f);
+        
+        /// <summary>
+        /// Wertet die Kurve an einer gegebenen Distanz aus.
+        /// </summary>
+        /// <param name="distance">Aktuelle Distanz in Tiles (worldX).</param>
+        /// <returns>Wert >= minValue.</returns>
+        public float Evaluate(float distance)
+        {
+            switch (mode)
+            {
+                case DistributionMode.Gaussian:
+                    return EvaluateGaussian(distance);
+                case DistributionMode.RisingPlateau:
+                    return EvaluateRisingPlateau(distance);
+                case DistributionMode.CustomCurve:
+                    return EvaluateCustomCurve(distance);
+                default:
+                    return minValue;
+            }
+        }
+        
+        /// <summary>
+        /// Gauß-Formel: minValue + (maxValue - minValue) * e^(-0.5 * ((x - peak) / spread)^2)
+        /// </summary>
+        float EvaluateGaussian(float distance)
+        {
+            float safeSigma = Mathf.Max(spread, 0.001f);
+            float exponent = -0.5f * Mathf.Pow((distance - peakDistance) / safeSigma, 2);
+            float gaussian = Mathf.Exp(exponent);
+            return minValue + (maxValue - minValue) * gaussian;
+        }
+        
+        /// <summary>
+        /// RisingPlateau: Sanfter Anstieg von minValue zu maxValue, dann Plateau.
+        /// Vor (peakDistance - spread): minValue (flach).
+        /// Zwischen (peakDistance - spread) und peakDistance: SmoothStep-Übergang.
+        /// Ab peakDistance: maxValue (bleibt dort).
+        /// 
+        /// Beispiel: peakDistance=1000, spread=500
+        ///   0-500:    minValue (nichts spawnt)
+        ///   500-1000: sanfter Anstieg
+        ///   1000+:    maxValue (volle Stärke)
+        /// </summary>
+        float EvaluateRisingPlateau(float distance)
+        {
+            float safeSpread = Mathf.Max(spread, 0.001f);
+            float rampStart = peakDistance - safeSpread;
+            
+            // Vor der Übergangszone: minValue
+            if (distance <= rampStart)
+                return minValue;
+            
+            // Nach dem Peak: maxValue
+            if (distance >= peakDistance)
+                return maxValue;
+            
+            // In der Übergangszone: SmoothStep (S-Kurve)
+            float t = (distance - rampStart) / safeSpread;
+            float smooth = t * t * (3f - 2f * t); // Hermite SmoothStep
+            return minValue + (maxValue - minValue) * smooth;
+        }
+        
+        float EvaluateCustomCurve(float distance)
+        {
+            float value = customCurve.Evaluate(distance);
+            return Mathf.Max(value, minValue);
+        }
+    }
+
+    /// <summary>
+    /// Ein spawbares Objekt mit distanzbasierter Gewichtung.
+    /// Wiederverwendbar für Emeralds, Items, Power-Ups, etc.
     /// 
-    /// Das minWeight sorgt dafür, dass ein Item nie komplett verschwindet —
+    /// Nutzt DistanceCurve für die Gewichtsberechnung.
+    /// Das minValue der Kurve sorgt dafür, dass ein Item nie komplett verschwindet —
     /// der Spieler hat immer eine kleine Chance, seltene Items zu finden.
     /// </summary>
     [System.Serializable]
@@ -30,65 +133,17 @@ namespace WorldGeneration
         public string name = "Item";
         public GameObject prefab;
         
-        [Header("Distribution Mode")]
-        [Tooltip("Gaussian = Glockenkurve mit Peak/Spread. CustomCurve = freie AnimationCurve.")]
-        public DistributionMode mode = DistributionMode.Gaussian;
-        
-        [Header("Gaussian Settings")]
-        [Tooltip("Distanz (in Tiles) wo dieses Item die höchste Spawn-Chance hat.")]
-        public float peakDistance = 250f;
-        
-        [Tooltip("Breite der Glockenkurve (Standardabweichung in Tiles). Größer = breitere Verteilung.")]
-        public float spread = 200f;
-        
-        [Tooltip("Maximales Gewicht am Peak der Kurve.")]
-        public float maxWeight = 1f;
-        
-        [Tooltip("Minimales Gewicht — Chance sinkt nie unter diesen Wert. Verhindert dass Items komplett verschwinden.")]
-        [Range(0f, 1f)]
-        public float minWeight = 0.05f;
-        
-        [Header("Custom Curve Settings")]
-        [Tooltip("X-Achse = Distanz (in Tiles), Y-Achse = Gewicht. Wird nur benutzt wenn Mode = CustomCurve.")]
-        public AnimationCurve customCurve = AnimationCurve.EaseInOut(0f, 0f, 1000f, 1f);
+        [Header("Distance-Based Weight")]
+        [Tooltip("Distanzkurve die das Spawn-Gewicht dieses Eintrags bestimmt.")]
+        public DistanceCurve weight = new DistanceCurve();
         
         /// <summary>
         /// Berechnet das Spawn-Gewicht für eine gegebene Distanz.
+        /// Delegiert an die DistanceCurve.
         /// </summary>
-        /// <param name="distance">Aktuelle Distanz in Tiles (worldX).</param>
-        /// <returns>Gewicht >= minWeight.</returns>
         public float EvaluateWeight(float distance)
         {
-            switch (mode)
-            {
-                case DistributionMode.Gaussian:
-                    return EvaluateGaussian(distance);
-                case DistributionMode.CustomCurve:
-                    return EvaluateCustomCurve(distance);
-                default:
-                    return minWeight;
-            }
-        }
-        
-        /// <summary>
-        /// Gauß-Formel: minWeight + (maxWeight - minWeight) * e^(-0.5 * ((x - peak) / spread)^2)
-        /// Erzeugt eine Glockenkurve die am Peak maxWeight erreicht und nie unter minWeight fällt.
-        /// </summary>
-        float EvaluateGaussian(float distance)
-        {
-            float safeSigma = Mathf.Max(spread, 0.001f);
-            float exponent = -0.5f * Mathf.Pow((distance - peakDistance) / safeSigma, 2);
-            float gaussian = Mathf.Exp(exponent);
-            return minWeight + (maxWeight - minWeight) * gaussian;
-        }
-        
-        /// <summary>
-        /// Wertet die benutzerdefinierte AnimationCurve aus, mit minWeight als Untergrenze.
-        /// </summary>
-        float EvaluateCustomCurve(float distance)
-        {
-            float value = customCurve.Evaluate(distance);
-            return Mathf.Max(value, minWeight);
+            return weight.Evaluate(distance);
         }
     }
     

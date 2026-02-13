@@ -6,6 +6,10 @@ namespace WorldGeneration
     /// <summary>
     /// Spawnt Enemies auf Ground und Plattformen.
     /// Prüft ob genug Platz vorhanden ist.
+    /// 
+    /// Nutzt DistanceCurve für distanzbasierte Spawn-Wahrscheinlichkeit:
+    /// Jeder Enemy-Typ hat seine eigene Kurve, sodass verschiedene Gegner
+    /// in verschiedenen Distanzzonen häufiger oder seltener auftreten.
     /// </summary>
     public class EnemyPass : GeneratorPassBase
     {
@@ -15,9 +19,16 @@ namespace WorldGeneration
             public string name = "Enemy";
             public GameObject prefab;
             
-            [Header("Spawn Chance")]
-            [Range(0f, 1f)]
-            public float spawnChance = 0.1f;
+            [Header("Spawn Probability (Distance-Based)")]
+            [Tooltip("Distanzkurve die die Spawn-Wahrscheinlichkeit bestimmt. Der Wert der Kurve wird direkt als Chance verwendet (0-1).")]
+            public DistanceCurve spawnProbability = new DistanceCurve
+            {
+                mode = DistributionMode.Gaussian,
+                peakDistance = 500f,
+                spread = 300f,
+                maxValue = 0.1f,
+                minValue = 0.01f
+            };
             
             [Header("Spawn On")]
             public bool spawnOnGround = true;
@@ -153,8 +164,9 @@ namespace WorldGeneration
                     return;
             }
             
-            // Spawn-Chance
-            if (Random.value > enemy.spawnChance)
+            // Distanzbasierte Spawn-Chance
+            float spawnChance = enemy.spawnProbability.Evaluate(worldX);
+            if (Random.value > spawnChance)
                 return;
             
             // Ramp-Check: Nicht auf Rampen spawnen
@@ -181,7 +193,17 @@ namespace WorldGeneration
             
             if (showSpawnPositions)
             {
-                Debug.Log($"[EnemyPass] Occupied position ({worldX}, {surfaceY + 1})");
+                // Alle Enemy-Typen mit ihrer aktuellen Wahrscheinlichkeit anzeigen
+                var sb = new System.Text.StringBuilder();
+                sb.Append($"[EnemyPass] [Distance={worldX}] ");
+                for (int j = 0; j < enemies.Count; j++)
+                {
+                    if (j > 0) sb.Append(", ");
+                    float prob = enemies[j].spawnProbability.Evaluate(worldX);
+                    sb.Append($"{enemies[j].name}: {prob:P2}");
+                }
+                sb.Append($" → Spawned: {enemy.name} at ({worldX}, {surfaceY + 1})");
+                Debug.Log(sb.ToString());
             }
             
             // Letzte Position merken
@@ -278,7 +300,14 @@ namespace WorldGeneration
                 enemies.Add(new EnemyPrefab
                 {
                     name = "Basic Enemy",
-                    spawnChance = 0.05f,
+                    spawnProbability = new DistanceCurve
+                    {
+                        mode = DistributionMode.Gaussian,
+                        peakDistance = 500f,
+                        spread = 300f,
+                        maxValue = 0.05f,
+                        minValue = 0.005f
+                    },
                     spaceLeft = 1,
                     spaceRight = 1,
                     spaceUp = 2,
