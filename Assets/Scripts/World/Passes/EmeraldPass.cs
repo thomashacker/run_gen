@@ -132,8 +132,15 @@ namespace WorldGeneration
                     continue;
                 }
                 
-                // Position bereits besetzt? (z.B. durch Enemy)
+                // Spalte bereits von einem anderen Entity belegt? (Enemy, Trap, etc.)
                 int worldX = chunk.LocalToWorldX(localX);
+                if (ChunkUtilities.IsColumnOccupied(context, worldX))
+                {
+                    if (debugMode) Debug.Log($"[EmeraldPass] Skipped ({worldX}) - Column occupied");
+                    continue;
+                }
+                
+                // Position bereits besetzt? (z.B. durch Enemy)
                 if (ChunkUtilities.IsPositionOccupied(context, worldX, surfaceY + 1))
                 {
                     if (debugMode) Debug.Log($"[EmeraldPass] Skipped ({worldX}, {surfaceY + 1}) - Position occupied");
@@ -147,8 +154,9 @@ namespace WorldGeneration
                 GameObject emerald = Object.Instantiate(selectedEntry.prefab, spawnPos, Quaternion.identity, emeraldParent);
                 spawnedEmeralds.Add(emerald);
                 
-                // Position als besetzt markieren
+                // Position und Spalte als besetzt markieren
                 ChunkUtilities.OccupyPosition(context, worldX, surfaceY + 1);
+                ChunkUtilities.OccupyColumn(context, worldX);
             }
         }
         

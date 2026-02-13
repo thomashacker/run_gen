@@ -64,6 +64,45 @@ namespace WorldGeneration
         
         #endregion
         
+        #region Column Occupation (Spalten-Exklusivität zwischen Passes)
+        
+        private const string OCCUPIED_COLUMNS_KEY = "OccupiedColumns";
+        
+        /// <summary>
+        /// Holt oder erstellt das Set der besetzten Spalten.
+        /// Wird von allen Entity-Passes geteilt (Emerald, Enemy, Trap),
+        /// damit pro Spalte maximal ein Entity spawnen kann.
+        /// </summary>
+        private static HashSet<int> GetOccupiedColumns(GenerationContext context)
+        {
+            var columns = context.GetData<HashSet<int>>(OCCUPIED_COLUMNS_KEY, null);
+            if (columns == null)
+            {
+                columns = new HashSet<int>();
+                context.SetData(OCCUPIED_COLUMNS_KEY, columns);
+            }
+            return columns;
+        }
+        
+        /// <summary>
+        /// Markiert eine Spalte (worldX) als belegt.
+        /// Verhindert dass ein anderer Pass hier ein Entity platziert.
+        /// </summary>
+        public static void OccupyColumn(GenerationContext context, int worldX)
+        {
+            GetOccupiedColumns(context).Add(worldX);
+        }
+        
+        /// <summary>
+        /// Prüft ob eine Spalte (worldX) bereits von einem Entity belegt ist.
+        /// </summary>
+        public static bool IsColumnOccupied(GenerationContext context, int worldX)
+        {
+            return GetOccupiedColumns(context).Contains(worldX);
+        }
+        
+        #endregion
+        
         #region Ramp Detection
         
         /// <summary>
@@ -161,30 +200,24 @@ namespace WorldGeneration
             {
                 heights[x] = -1;
                 
-                // Von oben nach unten - erste solide Oberfläche
+                // Von oben nach unten die tatsächliche Tile-Matrix scannen.
+                // Nutzt IsWalkable (Solid + Ramp), nicht nur IsSolid,
+                // damit Rampen als Oberfläche erkannt werden.
+                // Kein Metadata-Fallback — die Matrix ist die Wahrheit nach allen Passes.
                 for (int y = chunk.height - 1; y >= 0; y--)
                 {
                     TileData tile = chunk[x, y];
                     
-                    if (includePlatforms && tile.layer == TileLayer.Platform && tile.IsSolid)
+                    if (includePlatforms && tile.layer == TileLayer.Platform && tile.IsWalkable)
                     {
                         heights[x] = y;
                         break;
                     }
                     
-                    if (includeGround && tile.layer == TileLayer.Ground && tile.IsSolid)
+                    if (includeGround && tile.layer == TileLayer.Ground && tile.IsWalkable)
                     {
                         heights[x] = y;
                         break;
-                    }
-                }
-                
-                // Fallback: Ground Metadata
-                if (heights[x] < 0 && includeGround && chunk.metadata.surfaceHeights != null)
-                {
-                    if (x < chunk.metadata.surfaceHeights.Length)
-                    {
-                        heights[x] = chunk.metadata.surfaceHeights[x];
                     }
                 }
             }

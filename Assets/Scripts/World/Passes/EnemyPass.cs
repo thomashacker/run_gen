@@ -157,6 +157,10 @@ namespace WorldGeneration
         {
             int worldX = chunk.LocalToWorldX(localX);
             
+            // Spalte bereits von einem anderen Entity belegt? (Emerald, Trap, etc.)
+            if (ChunkUtilities.IsColumnOccupied(context, worldX))
+                return;
+            
             // Mindestabstand prüfen
             if (lastSpawnX.TryGetValue(enemyIndex, out int lastX))
             {
@@ -188,8 +192,9 @@ namespace WorldGeneration
             // Enemy spawnen
             SpawnEnemy(enemy.prefab, spawnPos);
             
-            // Position als besetzt markieren
+            // Position und Spalte als besetzt markieren
             ChunkUtilities.OccupyPosition(context, worldX, surfaceY + 1);
+            ChunkUtilities.OccupyColumn(context, worldX);
             
             if (showSpawnPositions)
             {

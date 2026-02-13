@@ -365,4 +365,4 @@ MonoBehaviour:
   keyDown: 115
   playerAnimator: {fileID: 3378373392132881832}
   playerCollider: {fileID: 8180909762023815991}
-  debugMode: 1
+  debugMode: 0
