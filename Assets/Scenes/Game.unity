@@ -1389,7 +1389,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 113841790}
   smoothSpeed: 8
-  offset: {x: 1.5, y: 0.5}
+  offset: {x: 3, y: 0.5}
   followY: 1
   fixedYPosition: 0
   minVisibleY: 1
@@ -4079,9 +4079,52 @@ MonoBehaviour:
     spaceLeft: 0
     spaceRight: 0
     spaceUp: 0
+    spaceDown: 0
     minDistanceBetween: 10
     spawnXOffset: 0.5
     spawnYOffset: 1
+  - name: Swinging Axe
+    prefab: {fileID: 7562146584727210280, guid: 87c6ece14a8150f40b6e7cb51cb09ae7, type: 3}
+    spawnProbability:
+      mode: 2
+      peakDistance: 300
+      spread: 200
+      maxValue: 0.03
+      minValue: 0.005
+      customCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: -9.425739
+          value: 0.001
+          inSlope: 0.000024391518
+          outSlope: 0.000024391518
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0.33333334
+        - serializedVersion: 3
+          time: 1999.4694
+          value: 0.05
+          inSlope: 0.000024391518
+          outSlope: 0.000024391518
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    spawnOnGround: 1
+    spawnOnPlatforms: 1
+    requiresGround: 0
+    spaceLeft: 2
+    spaceRight: 2
+    spaceUp: 0
+    spaceDown: 0
+    minDistanceBetween: 10
+    spawnXOffset: 0
+    spawnYOffset: 2.7
   safeStartColumns: 30
   trapParent: {fileID: 0}
   showSpawnPositions: 0

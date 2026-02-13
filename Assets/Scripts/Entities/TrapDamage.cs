@@ -4,11 +4,13 @@ using UnityEngine;
 /// Fügt dem Spieler Schaden zu wenn er den Trigger berührt.
 /// Konfigurierbar: 1 Herz Schaden oder Soforttod.
 /// 
+/// Reagiert auf beide Kollisionsarten (Trigger und Collision),
+/// sodass nur ein einzelner PolygonCollider2D benötigt wird.
+///
 /// Prefab-Setup:
 ///   - SpriteRenderer (Sprite)
-///   - PolygonCollider2D mit isTrigger = true (Custom Physics Shape aus Sprite Editor)
+///   - PolygonCollider2D (isTrigger = true ODER false, beides funktioniert)
 ///   - TrapDamage (dieses Script)
-///   - Kein Rigidbody2D nötig (statischer Trigger)
 /// </summary>
 public class TrapDamage : MonoBehaviour
 {
@@ -29,8 +31,18 @@ public class TrapDamage : MonoBehaviour
     
     void OnTriggerEnter2D(Collider2D other)
     {
+        TryDamage(other.gameObject);
+    }
+    
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        TryDamage(collision.gameObject);
+    }
+    
+    void TryDamage(GameObject other)
+    {
         // Nur auf Player-Layer reagieren
-        if (playerLayer != 0 && ((1 << other.gameObject.layer) & playerLayer) == 0)
+        if (playerLayer != 0 && ((1 << other.layer) & playerLayer) == 0)
             return;
         
         PlayerManager player = other.GetComponent<PlayerManager>();

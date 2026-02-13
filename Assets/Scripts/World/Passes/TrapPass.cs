@@ -42,6 +42,8 @@ namespace WorldGeneration
             public int spaceRight = 0;
             [Tooltip("Freier Platz nach oben benötigt")]
             public int spaceUp = 0;
+            [Tooltip("Freier Platz nach unten benötigt (z.B. für hängende Fallen wie Pendel-Äxte)")]
+            public int spaceDown = 0;
             
             [Header("Spawn Limits")]
             [Tooltip("Minimaler Abstand zwischen Traps dieses Typs (in Tiles)")]
@@ -220,6 +222,13 @@ namespace WorldGeneration
                     return false;
             }
             
+            // Unten prüfen (unter der Oberfläche, z.B. für hängende Fallen)
+            for (int dy = 1; dy <= trap.spaceDown; dy++)
+            {
+                if (!ChunkUtilities.IsEmpty(chunk, localX, spawnY - dy))
+                    return false;
+            }
+            
             return true;
         }
         
@@ -265,6 +274,7 @@ namespace WorldGeneration
                     spaceLeft = 0,
                     spaceRight = 0,
                     spaceUp = 0,
+                    spaceDown = 0,
                     minDistanceBetween = 8,
                     spawnXOffset = 0f,
                     spawnYOffset = 0f
