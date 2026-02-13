@@ -338,55 +338,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5322816068076853802, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
   m_PrefabInstance: {fileID: 7485060493130864127}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &123177615
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 123177616}
-  - component: {fileID: 123177617}
-  m_Layer: 0
-  m_Name: RampPass
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &123177616
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 123177615}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 776347548}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &123177617
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 123177615}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45b5baac5e309bc4dbdbaac611f15f4c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  passName: Ramp Pass
-  enabled: 1
-  rampChance: 1
-  onlyForSingleSteps: 1
-  maxHeightDiff: 2
 --- !u!1 &161347493
 GameObject:
   m_ObjectHideFlags: 0
@@ -744,9 +695,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   passName: Ground Pass
   enabled: 1
-  baseHeight: 30
-  minHeight: 1
-  maxHeight: 50
+  baseHeight: 15
+  minHeight: 5
+  maxHeight: 25
   noiseFrequency: 0.01
   noiseOctaves: 3
   noiseSeedOffset: 0
@@ -1104,12 +1055,12 @@ TilemapRenderer:
   m_SortingLayer: -1
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 1, y: 1, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
   m_Mode: 0
-  m_DetectChunkCullingBounds: 0
+  m_DetectChunkCullingBounds: 1
   m_MaskInteraction: 0
 --- !u!1839735485 &438553361
 Tilemap:
@@ -1437,13 +1388,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 113841790}
-  smoothSpeed: 4
+  smoothSpeed: 8
   offset: {x: 1.5, y: 0.5}
   followY: 1
   fixedYPosition: 0
   minVisibleY: 1
   maxY: 50
-  enableDynamicZoom: 1
+  enablePixelSnapping: 0
+  pixelsPerUnit: 16
+  enableDynamicZoom: 0
   baseZoom: 4
   baseHeight: 5
   zoomPerUnit: 0.25
@@ -1457,17 +1410,17 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 537536383}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c88f5cead0c0b2a4eb05b5900433f8d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_ComponentVersion: 1
-  m_AssetsPPU: 96
-  m_RefResolutionX: 1920
-  m_RefResolutionY: 1080
+  m_AssetsPPU: 64
+  m_RefResolutionX: 1280
+  m_RefResolutionY: 720
   m_CropFrame: 0
-  m_GridSnapping: 1
+  m_GridSnapping: 2
   m_FilterMode: 0
   m_UpscaleRT: 0
   m_PixelSnapping: 0
@@ -1929,12 +1882,12 @@ TilemapRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 1, y: 1, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
   m_Mode: 0
-  m_DetectChunkCullingBounds: 0
+  m_DetectChunkCullingBounds: 1
   m_MaskInteraction: 0
 --- !u!1839735485 &755402127
 Tilemap:
@@ -2037,7 +1990,6 @@ Transform:
   - {fileID: 1393083436}
   - {fileID: 969081666}
   - {fileID: 198963835}
-  - {fileID: 123177616}
   - {fileID: 613720177}
   - {fileID: 1501298595}
   - {fileID: 1200892818}
@@ -2060,15 +2012,10 @@ MonoBehaviour:
   backgroundTilemap: {fileID: 438553361}
   foregroundTilemap: {fileID: 755402127}
   groundTile: {fileID: 11400000, guid: 1d2075139c1b44709ba5fa0973d6c2f7, type: 2}
-  groundRampUpTile: {fileID: 11400000, guid: 07f95761365141c44be34d0e69316374, type: 2}
-  groundRampDownTile: {fileID: 11400000, guid: f5d2c42da7a41d44389601fc2c761a07, type: 2}
-  platformTile: {fileID: 11400000, guid: 3b13c6231e03b4ca193e6721aa464141, type: 2}
-  platformRampUpTile: {fileID: 11400000, guid: 07f95761365141c44be34d0e69316374, type: 2}
-  platformRampDownTile: {fileID: 11400000, guid: f5d2c42da7a41d44389601fc2c761a07, type: 2}
+  platformTile: {fileID: 11400000, guid: 707f705db1d103c4585c0bdba550803b, type: 2}
   backgroundTilesByType: []
   defaultBackgroundTile: {fileID: 11400000, guid: 8d02f011c34a747ebbb99a16584c0227, type: 2}
   shadowTile: {fileID: 11400000, guid: 8d02f011c34a747ebbb99a16584c0227, type: 2}
-  useSeparatePlatformTilemap: 1
 --- !u!114 &776347550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2082,7 +2029,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chunkWidth: 100
-  chunkHeight: 50
+  chunkHeight: 25
   chunksAhead: 6
   chunksBehind: 6
   seed: 0
@@ -2093,13 +2040,12 @@ MonoBehaviour:
   - {fileID: 1393083437}
   - {fileID: 969081667}
   - {fileID: 198963836}
-  - {fileID: 123177617}
   - {fileID: 613720178}
   - {fileID: 1501298596}
   - {fileID: 1200892819}
   chunkRenderer: {fileID: 776347549}
   player: {fileID: 113841790}
-  enableLiveReload: 0
+  enableLiveReload: 1
   reloadKey: 286
   reloadDelay: 0.5
 --- !u!114 &776347551
@@ -2288,6 +2234,8 @@ MonoBehaviour:
   minCooldown: 20
   safeStartColumns: 15
   gapBottomOffset: 0
+  backgroundType: 1
+  backgroundYOffset: -1
 --- !u!1 &991109741
 GameObject:
   m_ObjectHideFlags: 0
@@ -3004,12 +2952,12 @@ TilemapRenderer:
   m_SortingLayer: 0
   m_SortingOrder: -1
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 1, y: 1, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
   m_Mode: 0
-  m_DetectChunkCullingBounds: 0
+  m_DetectChunkCullingBounds: 1
   m_MaskInteraction: 0
 --- !u!1839735485 &1199008699
 Tilemap:
@@ -4054,12 +4002,12 @@ TilemapRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 1, y: 1, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
   m_Mode: 0
-  m_DetectChunkCullingBounds: 0
+  m_DetectChunkCullingBounds: 1
   m_MaskInteraction: 0
 --- !u!1839735485 &1973100876
 Tilemap:
@@ -4154,25 +4102,25 @@ Tilemap:
   m_TileMatrixArray:
   - m_RefCount: 0
     m_Data:
-      e00: 1
+      e00: 2.35e-43
       e01: 0
-      e02: 0
-      e03: 0
+      e02: 1e-45
+      e03: -2.0328811e-19
       e10: 0
-      e11: 1
+      e11: 0
       e12: 0
-      e13: 0
-      e20: 0
-      e21: 0
-      e22: 1
-      e23: 0
-      e30: 0
-      e31: 0
-      e32: 0
-      e33: 1
+      e13: 7.64e-43
+      e20: 2.505145e+33
+      e21: -2.0328811e-19
+      e22: 2.7295435e-29
+      e23: 3.1761436e-18
+      e30: 4.5914e-41
+      e31: 7.64e-43
+      e32: 7.68e-43
+      e33: 7.65e-43
   m_TileColorArray:
   - m_RefCount: 0
-    m_Data: {r: 1, g: 1, b: 1, a: 1}
+    m_Data: {r: 6.4199e-41, g: 6.4199e-41, b: 6.4199e-41, a: 6.4199e-41}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}

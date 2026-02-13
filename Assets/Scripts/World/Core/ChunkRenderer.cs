@@ -12,7 +12,7 @@ namespace WorldGeneration
         [Header("Tilemaps")]
         [Tooltip("Haupt-Tilemap für Ground")]
         public Tilemap groundTilemap;
-        [Tooltip("Tilemap für Plattformen (optional, sonst Ground)")]
+        [Tooltip("Separate Tilemap für Plattformen")]
         public Tilemap platformTilemap;
         [Tooltip("Tilemap für Hintergrund (optional)")]
         public Tilemap backgroundTilemap;
@@ -21,13 +21,9 @@ namespace WorldGeneration
         
         [Header("Ground Tiles")]
         public TileBase groundTile;
-        public TileBase groundRampUpTile;
-        public TileBase groundRampDownTile;
         
         [Header("Platform Tiles")]
         public TileBase platformTile;
-        public TileBase platformRampUpTile;
-        public TileBase platformRampDownTile;
         
         [Header("Background Tiles")]
         [Tooltip("Maps BackgroundType to TileBase. Index = (int)BackgroundType (None=0, Default=1, Dirt=2, etc.). ChunkRenderer assigns tiles from this; passes only set the type in data.")]
@@ -36,10 +32,6 @@ namespace WorldGeneration
         public TileBase defaultBackgroundTile;
         [Tooltip("Schatten-Tile (z. B. schwarz mit Transparenz). Wird auf foregroundTilemap gesetzt, wo immer ein Hintergrund-Tile ist.")]
         public TileBase shadowTile;
-        
-        [Header("Settings")]
-        [Tooltip("Tilemap für Plattformen wenn keine separate zugewiesen")]
-        public bool useSeparatePlatformTilemap = false;
         
         void Awake()
         {
@@ -51,8 +43,8 @@ namespace WorldGeneration
                     groundTilemap = GetComponentInChildren<Tilemap>();
             }
             
-            // Platform Tilemap fallback
-            if (platformTilemap == null && useSeparatePlatformTilemap)
+            // Platform Tilemap auto-find
+            if (platformTilemap == null)
             {
                 // Versuche eine mit "Platform" im Namen zu finden
                 foreach (var tm in GetComponentsInChildren<Tilemap>())
@@ -64,9 +56,6 @@ namespace WorldGeneration
                     }
                 }
             }
-            
-            if (platformTilemap == null)
-                platformTilemap = groundTilemap;
         }
         
         /// <summary>
@@ -270,12 +259,6 @@ namespace WorldGeneration
                 case TileType.Solid:
                 case TileType.Platform:
                     return isPlatform ? (platformTile ?? groundTile) : groundTile;
-                    
-                case TileType.RampUp:
-                    return isPlatform ? (platformRampUpTile ?? groundRampUpTile) : groundRampUpTile;
-                    
-                case TileType.RampDown:
-                    return isPlatform ? (platformRampDownTile ?? groundRampDownTile) : groundRampDownTile;
                     
                 case TileType.Air:
                 case TileType.Gap:

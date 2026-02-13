@@ -6,23 +6,17 @@ namespace WorldGeneration
     /// <summary>
     /// Spawnt Linien von Rubinen/Münzen auf Ground und Plattformen.
     /// Emeralds folgen der Oberfläche (Ground oder Platform).
+    /// 
+    /// Nutzt das SpawnDistribution-System für distanzbasierte Auswahl:
+    /// Jeder Emerald-Typ hat eine eigene Spawn-Kurve (Gaussian oder Custom),
+    /// sodass verschiedene Typen in verschiedenen Distanzzonen dominieren,
+    /// aber nie komplett verschwinden.
     /// </summary>
     public class EmeraldPass : GeneratorPassBase
     {
-        [System.Serializable]
-        public class EmeraldType
-        {
-            public string name = "Emerald";
-            public GameObject prefab;
-            
-            [Header("Spawn Chance")]
-            [Range(0f, 1f)]
-            [Tooltip("Gewichtung für diesen Typ")]
-            public float spawnWeight = 1f;
-        }
-        
-        [Header("Emerald Types")]
-        public List<EmeraldType> emeraldTypes = new List<EmeraldType>();
+        [Header("Emerald Types (Distance-Based)")]
+        [Tooltip("Jeder Eintrag hat seine eigene Distanzkurve. Emerald-Typ wird pro Linie basierend auf worldX ausgewählt.")]
+        public List<SpawnableEntry> emeraldEntries = new List<SpawnableEntry>();
         
         [Header("Line Settings")]
         [Range(0f, 1f)]
@@ -71,7 +65,7 @@ namespace WorldGeneration
         
         public override ChunkData Execute(ChunkData chunk, GenerationContext context)
         {
-            if (emeraldTypes.Count == 0) return chunk;
+            if (emeraldEntries.Count == 0) return chunk;
             
             // Oberflächen-Map erstellen (nutzt ChunkUtilities)
             int[] surfaceHeights = ChunkUtilities.GetCombinedSurfaceHeights(chunk, spawnOnGround, spawnOnPlatforms);
@@ -109,8 +103,15 @@ namespace WorldGeneration
         
         void SpawnLine(ChunkData chunk, GenerationContext context, int startLocalX, int length, int[] surfaceHeights)
         {
-            EmeraldType selectedType = GetRandomEmeraldType();
-            if (selectedType == null || selectedType.prefab == null) return;
+            // Distanzbasierte Auswahl: worldX bestimmt welcher Emerald-Typ gespawnt wird
+            int lineWorldX = chunk.LocalToWorldX(startLocalX);
+            SpawnableEntry selectedEntry = SpawnDistribution.SelectWeighted(emeraldEntries, lineWorldX);
+            if (selectedEntry == null || selectedEntry.prefab == null) return;
+            
+            if (debugMode)
+            {
+                Debug.Log($"[EmeraldPass] {SpawnDistribution.GetDebugString(emeraldEntries, lineWorldX)} → Selected: {selectedEntry.name}");
+            }
             
             for (int i = 0; i < length; i++)
             {
@@ -143,7 +144,7 @@ namespace WorldGeneration
                 Vector3 spawnPos = ChunkUtilities.CalculateSpawnPosition(
                     chunk, context, localX, surfaceY, heightAboveSurface, centerInTile: false);
                 
-                GameObject emerald = Object.Instantiate(selectedType.prefab, spawnPos, Quaternion.identity, emeraldParent);
+                GameObject emerald = Object.Instantiate(selectedEntry.prefab, spawnPos, Quaternion.identity, emeraldParent);
                 spawnedEmeralds.Add(emerald);
                 
                 // Position als besetzt markieren
@@ -151,31 +152,7 @@ namespace WorldGeneration
             }
         }
         
-        EmeraldType GetRandomEmeraldType()
-        {
-            if (emeraldTypes.Count == 0) return null;
-            
-            // Gewichtete Auswahl
-            float totalWeight = 0f;
-            foreach (var type in emeraldTypes)
-            {
-                totalWeight += type.spawnWeight;
-            }
-            
-            float random = Random.value * totalWeight;
-            float cumulative = 0f;
-            
-            foreach (var type in emeraldTypes)
-            {
-                cumulative += type.spawnWeight;
-                if (random <= cumulative)
-                {
-                    return type;
-                }
-            }
-            
-            return emeraldTypes[0];
-        }
+        // Emerald-Auswahl läuft jetzt über SpawnDistribution.SelectWeighted() in SpawnLine().
         
         public void ClearAllEmeralds()
         {
@@ -196,12 +173,27 @@ namespace WorldGeneration
         {
             passName = "Emerald Pass";
             
-            if (emeraldTypes.Count == 0)
+            if (emeraldEntries.Count == 0)
             {
-                emeraldTypes.Add(new EmeraldType
+                // Standard-Setup: Green Emerald früh, Blue Emerald spät
+                emeraldEntries.Add(new SpawnableEntry
                 {
                     name = "Green Emerald",
-                    spawnWeight = 1f
+                    mode = DistributionMode.Gaussian,
+                    peakDistance = 250f,
+                    spread = 200f,
+                    maxWeight = 1f,
+                    minWeight = 0.05f
+                });
+                
+                emeraldEntries.Add(new SpawnableEntry
+                {
+                    name = "Blue Emerald",
+                    mode = DistributionMode.Gaussian,
+                    peakDistance = 1000f,
+                    spread = 400f,
+                    maxWeight = 1f,
+                    minWeight = 0.05f
                 });
             }
         }

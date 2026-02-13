@@ -15,6 +15,10 @@ public class CameraManager : MonoBehaviour
     public float minVisibleY = 0f;           // Untere sichtbare Grenze (Kamera zeigt nichts darunter)
     public float maxY = 50f;                 // Maximale Y-Position der Kamera
     
+    [Header("Pixel Snapping")]
+    public bool enablePixelSnapping = true;     // Snaps camera to pixel grid to prevent sub-pixel rendering
+    public float pixelsPerUnit = 16f;           // Must match your sprites' PPU!
+    
     [Header("Dynamic Zoom")]
     public bool enableDynamicZoom = true;    // Zoom basierend auf Spielerhöhe
     public float baseZoom = 5f;              // Basis orthographicSize (bei Y = baseHeight)
@@ -114,6 +118,12 @@ public class CameraManager : MonoBehaviour
             ref velocity,
             1f / smoothSpeed
         );
+        
+        // Snap to pixel grid to prevent sub-pixel shimmer
+        if (enablePixelSnapping)
+        {
+            transform.position = RoundToPixel(transform.position);
+        }
     }
     
     /// <summary>
@@ -147,7 +157,25 @@ public class CameraManager : MonoBehaviour
             targetY = fixedYPosition;
         }
         
-        transform.position = new Vector3(targetX, targetY, transform.position.z);
+        Vector3 snapPos = new Vector3(targetX, targetY, transform.position.z);
+        
+        if (enablePixelSnapping)
+        {
+            snapPos = RoundToPixel(snapPos);
+        }
+        
+        transform.position = snapPos;
         velocity = Vector3.zero;
+    }
+    
+    /// <summary>
+    /// Rounds a position to the nearest pixel boundary based on pixelsPerUnit.
+    /// Prevents sub-pixel camera positions that cause shimmer/jitter in pixel art.
+    /// </summary>
+    private Vector3 RoundToPixel(Vector3 position)
+    {
+        position.x = Mathf.Round(position.x * pixelsPerUnit) / pixelsPerUnit;
+        position.y = Mathf.Round(position.y * pixelsPerUnit) / pixelsPerUnit;
+        return position;
     }
 }
