@@ -15,14 +15,22 @@ public class GameManager : MonoBehaviour
     public event Action OnGameOver;
     public event Action OnGameRestart;
     
-    // Distance
+    // Distance (driven by world scroll, not player position)
     public float Distance { get; private set; } = 0f;
     public float HighScore { get; private set; } = 0f;
     
+    /// <summary>Current world scroll speed in units/second. 0 if no AutoScrollController.</summary>
+    public float CurrentSpeed
+    {
+        get
+        {
+            var scroll = World2.AutoScrollController.Instance;
+            return scroll != null ? scroll.CurrentSpeed : 0f;
+        }
+    }
+    
     [Header("References")]
     public Transform player;
-    
-    private float playerStartX;
     
     void Awake()
     {
@@ -52,21 +60,16 @@ public class GameManager : MonoBehaviour
                 player = pm.transform;
             }
         }
-        
-        // Startposition merken
-        if (player != null)
-        {
-            playerStartX = player.position.x;
-        }
     }
     
     void Update()
     {
-        // Distance während des Spielens berechnen
-        if (CurrentState == GameState.Playing && player != null)
+        // Distance = total world scroll distance
+        if (CurrentState == GameState.Playing)
         {
-            float dist = player.position.x - playerStartX;
-            Distance = Mathf.Max(Distance, dist); // Nur vorwärts zählen
+            var scroll = World2.AutoScrollController.Instance;
+            if (scroll != null)
+                Distance = scroll.TotalScrolled;
         }
     }
     

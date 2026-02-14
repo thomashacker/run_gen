@@ -371,7 +371,8 @@ public class PlayerManager : MonoBehaviour
         jumpBufferTimeLeft = 0f;
         coyoteTimeLeft = 0f;
 
-        // Velocity direkt setzen (kein AddForce) → immer v.y = jumpForce, sonst wird bei Fall zu hoch
+        // Velocity direkt setzen (kein AddForce) → immer v.y = jumpForce, sonst wird bei Fall zu hoch.
+        // Force-set to jumpForce so wall friction / collision residuals cannot reduce the jump.
         Vector2 v = rb.linearVelocity;
         v.y = jumpForce;
         rb.linearVelocity = v;

@@ -330,7 +330,7 @@ MonoBehaviour:
   currentState: 0
   maxHealth: 3
   currentHealth: 0
-  detectionRadius: 6
+  detectionRadius: 10
   playerLayer:
     serializedVersion: 2
     m_Bits: 128

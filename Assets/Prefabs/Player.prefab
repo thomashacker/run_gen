@@ -222,17 +222,17 @@ MonoBehaviour:
   moveSpeed: 6
   acceleration: 5
   deceleration: 12
-  jumpForce: 7
+  jumpForce: 7.5
   gravityRiseHold: 0.8
   gravityFall: 2.3
-  jumpCutGravityMult: 1.6
+  jumpCutGravityMult: 1.8
   maxFallSpeed: 35
   coyoteTime: 0.1
   jumpBufferTime: 0.15
   jumpHangThreshold: 0.5
   jumpHangGravityMult: 0.5
   jumpHangAccelMult: 1.2
-  fastFallGravityMult: 1.4
+  fastFallGravityMult: 1.6
   airAcceleration: 5
   airDeceleration: 5
   enableWallJump: 1
@@ -254,10 +254,10 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 256
-  groundCheckWidth: 0.5
+  groundCheckWidth: 0.3
   groundCheckDistance: 0.2
   groundCheck: {fileID: 5497585448126900847}
-  wallCheckDistance: 0.15
+  wallCheckDistance: 0.3
   maxHearts: 3
   invincibilityDuration: 1
 --- !u!70 &8180909762023815991
@@ -312,14 +312,12 @@ MonoBehaviour:
   player: {fileID: 7965132737332350930}
   animator: {fileID: 2832077709875959852}
   spriteRenderer: {fileID: 7501738655803130052}
-  idleAnim: Player_Idle
   runAnim: Player_Running
   jumpAnim: Player_Jump
   fallAnim: Player_Fall
   wallAnim: Player_Wall
   deadAnim: Player_Dead
   damageAnim: Player_Damage
-  runThreshold: 0.1
   jumpThreshold: 0.1
   damageDuration: 0.3
 --- !u!95 &5009173462813480533
@@ -351,7 +349,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5088844245669577972}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9b5471b60722d34881cb8738beb243e, type: 3}
   m_Name: 

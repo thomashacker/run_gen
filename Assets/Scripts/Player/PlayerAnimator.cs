@@ -12,7 +12,6 @@ public class PlayerAnimator : MonoBehaviour
     public SpriteRenderer spriteRenderer;
     
     [Header("Animation Names")]
-    public string idleAnim = "Player_Idle";
     public string runAnim = "Player_Running";
     public string jumpAnim = "Player_Jump";
     public string fallAnim = "Player_Fall";
@@ -21,8 +20,6 @@ public class PlayerAnimator : MonoBehaviour
     public string damageAnim = "Player_Damage";
     
     [Header("Settings")]
-    [Tooltip("Minimum horizontale Geschwindigkeit um als 'laufend' zu gelten")]
-    public float runThreshold = 0.1f;
     [Tooltip("Minimum vertikale Geschwindigkeit um als 'steigend' zu gelten")]
     public float jumpThreshold = 0.1f;
     [Tooltip("Dauer der Damage-Animation")]
@@ -155,17 +152,8 @@ public class PlayerAnimator : MonoBehaviour
             }
         }
         
-        // Priorität 4: Am Boden
-        float vx = rb != null ? Mathf.Abs(rb.linearVelocity.x) : 0f;
-        
-        // Laufend
-        if (vx > runThreshold)
-        {
-            return runAnim;
-        }
-        
-        // Idle
-        return idleAnim;
+        // Priorität 4: Am Boden - always running (world scrolls, player never idles)
+        return runAnim;
     }
     
     /// <summary>

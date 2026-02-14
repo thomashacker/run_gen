@@ -13,17 +13,23 @@ public class UIManager : MonoBehaviour
     [Header("HUD - Während des Spiels")]
     public GameObject hudPanel;
     public TextMeshProUGUI distanceText;
+    public TextMeshProUGUI speedText;
+    public TextMeshProUGUI timerText;
     
     [Header("Game Over Screen")]
     public GameObject gameOverPanel;
     public TextMeshProUGUI finalDistanceText;
     public TextMeshProUGUI highScoreText;
+    public TextMeshProUGUI finalTimeText;
     public TextMeshProUGUI finalLevelText;
     public Button restartButton;
     public Button exitButton;
     
     [Header("Settings")]
     public string distanceFormat = "{0:F0}m";
+    public string speedFormat = "{0:F1} u/s";
+    
+    private float elapsedTime;
     
     void Awake()
     {
@@ -103,6 +109,21 @@ public class UIManager : MonoBehaviour
         {
             distanceText.text = string.Format(distanceFormat, GameManager.Instance.Distance);
         }
+        
+        // Speed
+        if (speedText != null)
+        {
+            speedText.text = string.Format(speedFormat, GameManager.Instance.CurrentSpeed);
+        }
+        
+        // Timer
+        elapsedTime += Time.deltaTime;
+        if (timerText != null)
+        {
+            int minutes = (int)(elapsedTime / 60f);
+            int seconds = (int)(elapsedTime % 60f);
+            timerText.text = $"{minutes}:{seconds:D2}";
+        }
     }
     
     #endregion
@@ -136,6 +157,14 @@ public class UIManager : MonoBehaviour
         if (highScoreText != null)
         {
             highScoreText.text = $"Best: {GameManager.Instance.HighScore:F0}m";
+        }
+        
+        // Final Time
+        if (finalTimeText != null)
+        {
+            int minutes = (int)(elapsedTime / 60f);
+            int seconds = (int)(elapsedTime % 60f);
+            finalTimeText.text = $"Time: {minutes}:{seconds:D2}";
         }
         
         // Final Level
