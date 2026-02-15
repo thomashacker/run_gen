@@ -13,9 +13,21 @@ MonoBehaviour:
   m_Name: ChunkCatalog
   m_EditorClassIdentifier: 
   groups:
-  - name: Start
+  - name: Level 0
     startDistance: 0
-    endDistance: 125
+    endDistance: 25
+    chunks:
+    - {fileID: 11400000, guid: d11dae25bc19dcd409462f9edbc4af10, type: 2}
+  - name: Level 1
+    startDistance: 25
+    endDistance: 200
+    chunks:
+    - {fileID: 11400000, guid: d11dae25bc19dcd409462f9edbc4af10, type: 2}
+    - {fileID: 11400000, guid: fc046da0d801d7c4ea7a8fd1f48541f2, type: 2}
+    - {fileID: 11400000, guid: 574345a73d0b7f04aac60f16d099c0cf, type: 2}
+  - name: Level 2
+    startDistance: 200
+    endDistance: 10000
     chunks:
     - {fileID: 11400000, guid: d11dae25bc19dcd409462f9edbc4af10, type: 2}
     - {fileID: 11400000, guid: fc046da0d801d7c4ea7a8fd1f48541f2, type: 2}
@@ -23,14 +35,3 @@ MonoBehaviour:
     - {fileID: 11400000, guid: a962fccbeb6a41842b8f1a42eecaa96c, type: 2}
     - {fileID: 11400000, guid: 5c624f3d295bd5d4f9a8ad6c1ffa0512, type: 2}
     - {fileID: 11400000, guid: 52a1b3dcd40def64fa42aea5266ace29, type: 2}
-  - name: 1 Level
-    startDistance: 125
-    endDistance: 10000
-    chunks:
-    - {fileID: 11400000, guid: a738302763e889144bd12ff3df093c3c, type: 2}
-    - {fileID: 11400000, guid: fc046da0d801d7c4ea7a8fd1f48541f2, type: 2}
-    - {fileID: 11400000, guid: 574345a73d0b7f04aac60f16d099c0cf, type: 2}
-    - {fileID: 11400000, guid: a962fccbeb6a41842b8f1a42eecaa96c, type: 2}
-    - {fileID: 11400000, guid: 5c624f3d295bd5d4f9a8ad6c1ffa0512, type: 2}
-    - {fileID: 11400000, guid: 52a1b3dcd40def64fa42aea5266ace29, type: 2}
-    - {fileID: 11400000, guid: 96bd0dcec643ec5458b59466fedf7a16, type: 2}

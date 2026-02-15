@@ -19,18 +19,39 @@ public class GameManager : MonoBehaviour
     public float Distance { get; private set; } = 0f;
     public float HighScore { get; private set; } = 0f;
     
-    /// <summary>Current world scroll speed in units/second. 0 if no AutoScrollController.</summary>
+    /// <summary>
+    /// Current speed in units/second.
+    /// Auto-scroll mode: world scroll speed.
+    /// Player-driven mode: player's horizontal speed (from Rigidbody2D).
+    /// </summary>
     public float CurrentSpeed
     {
         get
         {
             var scroll = World2.AutoScrollController.Instance;
-            return scroll != null ? scroll.CurrentSpeed : 0f;
+            if (scroll == null) return 0f;
+
+            if (scroll.autoScrollEnabled)
+                return scroll.CurrentSpeed;
+
+            // Player-driven: show the player's actual horizontal speed
+            return playerRb != null ? Mathf.Abs(playerRb.linearVelocity.x) : 0f;
         }
     }
     
     [Header("References")]
     public Transform player;
+    
+    [Tooltip("Optional: pursuing kill zone (player-driven mode). Used to track distance between player and the wall.")]
+    public World2.ScrollKillZone killZone;
+    
+    /// <summary>
+    /// Distance in units between the player and the pursuing kill zone.
+    /// -1 if no kill zone is assigned or it's in Static mode.
+    /// </summary>
+    public float KillZoneDistance { get; private set; } = -1f;
+    
+    private Rigidbody2D playerRb;
     
     void Awake()
     {
@@ -60,16 +81,32 @@ public class GameManager : MonoBehaviour
                 player = pm.transform;
             }
         }
+        
+        // Cache Rigidbody2D for player-driven speed readout
+        if (player != null)
+            playerRb = player.GetComponent<Rigidbody2D>();
     }
     
     void Update()
     {
-        // Distance = total world scroll distance
-        if (CurrentState == GameState.Playing)
+        if (CurrentState != GameState.Playing) return;
+        
+        // Distance = total progression
+        var scroll = World2.AutoScrollController.Instance;
+        if (scroll != null)
+            Distance = scroll.TotalScrolled;
+        
+        // Kill zone distance (player-driven mode)
+        if (killZone != null && player != null &&
+            killZone.mode == World2.ScrollKillZone.KillZoneMode.Pursuing)
         {
-            var scroll = World2.AutoScrollController.Instance;
-            if (scroll != null)
-                Distance = scroll.TotalScrolled;
+            // Horizontal distance between player and the right edge of the kill zone
+            float zoneRightEdge = killZone.transform.position.x + killZone.zoneWidth * 0.5f;
+            KillZoneDistance = Mathf.Max(0f, player.position.x - zoneRightEdge);
+        }
+        else
+        {
+            KillZoneDistance = -1f;
         }
     }
     

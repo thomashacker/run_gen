@@ -330,17 +330,17 @@ MonoBehaviour:
   currentState: 0
   maxHealth: 3
   currentHealth: 0
-  detectionRadius: 10
+  detectionRadius: 7
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  aimDuration: 1.5
-  attackCooldown: 2
+  aimDuration: 1.2
+  attackCooldown: 1.8
   projectilePrefab: {fileID: 3795037294551504172, guid: 14cd61b712971204e839f6e94eab11fa, type: 3}
-  projectileSpeed: 4
+  projectileSpeed: 5
   firePoint: {fileID: 3873155927441871861}
   projectilesPerSalve: 1
   salveDelay: 0.3

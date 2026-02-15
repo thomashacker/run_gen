@@ -143,14 +143,21 @@ namespace World2
                 return;
             if (catalog == null || worldScroller == null) return;
 
-            // --- 1. Scroll the world leftward ---
-            // We move via transform. The child Kinematic Rigidbody2Ds (on the tilemaps)
-            // automatically track the transform change and compute proper collision.
-            float scrollSpeed = AutoScrollController.Instance != null
-                ? AutoScrollController.Instance.CurrentSpeed
-                : 0f;
-            float delta = scrollSpeed * Time.deltaTime;
-            worldScroller.position += Vector3.left * delta;
+            bool autoScroll = AutoScrollController.Instance != null
+                              && AutoScrollController.Instance.autoScrollEnabled;
+
+            // --- 1. Move the world (auto-scroll only) ---
+            if (autoScroll)
+            {
+                float scrollSpeed = AutoScrollController.Instance.CurrentSpeed;
+                float delta = scrollSpeed * Time.deltaTime;
+                worldScroller.position += Vector3.left * delta;
+            }
+            else
+            {
+                // Player-driven: camera follows player, so recompute bounds every frame
+                ComputeCameraBounds();
+            }
 
             // --- 2. Spawn new chunks when the right side needs filling ---
             float spawnThreshold = cameraRightEdge + spawnBufferRight * chunkWorldWidth;
@@ -159,7 +166,7 @@ namespace World2
                 SpawnNextChunk();
             }
 
-            // --- Despawn chunks that scrolled past the left edge ---
+            // --- 3. Despawn chunks that scrolled / fell behind the left edge ---
             float despawnThreshold = cameraLeftEdge - despawnBufferLeft * chunkWorldWidth;
             DespawnChunksBehind(despawnThreshold);
         }

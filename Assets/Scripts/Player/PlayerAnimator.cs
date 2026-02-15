@@ -12,6 +12,7 @@ public class PlayerAnimator : MonoBehaviour
     public SpriteRenderer spriteRenderer;
     
     [Header("Animation Names")]
+    public string idleAnim = "Player_Idle";
     public string runAnim = "Player_Running";
     public string jumpAnim = "Player_Jump";
     public string fallAnim = "Player_Fall";
@@ -152,8 +153,17 @@ public class PlayerAnimator : MonoBehaviour
             }
         }
         
-        // Priorität 4: Am Boden - always running (world scrolls, player never idles)
-        return runAnim;
+        // Priorität 4: Am Boden
+        // Auto-scroll: player always appears running (world moves under them).
+        // Player-driven: idle when no horizontal input.
+        var scroll = World2.AutoScrollController.Instance;
+        bool autoScroll = scroll != null && scroll.autoScrollEnabled;
+
+        if (autoScroll)
+            return runAnim;
+
+        float inputX = Input.GetAxisRaw("Horizontal");
+        return Mathf.Abs(inputX) > 0.01f ? runAnim : idleAnim;
     }
     
     /// <summary>

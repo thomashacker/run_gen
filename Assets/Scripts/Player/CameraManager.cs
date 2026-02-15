@@ -68,7 +68,11 @@ public class CameraManager : MonoBehaviour
     void LateUpdate()
     {
         if (target == null) return;
-        
+
+        // In auto-scroll mode the camera stays static (world moves, not the player)
+        var scroll = World2.AutoScrollController.Instance;
+        if (scroll != null && scroll.autoScrollEnabled) return;
+
         // === X-POSITION ===
         float targetX = target.position.x + offset.x;
         

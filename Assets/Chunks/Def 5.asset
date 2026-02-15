@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Def 5
   m_EditorClassIdentifier: 
   prefab: {fileID: 1353757915994519805, guid: f7c11086129d6cf49a1d48319fbb4286, type: 3}
-  spawnWeight: 1
+  spawnWeight: 5
   tags: []

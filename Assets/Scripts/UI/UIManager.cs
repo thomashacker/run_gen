@@ -15,6 +15,8 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI distanceText;
     public TextMeshProUGUI speedText;
     public TextMeshProUGUI timerText;
+    [Tooltip("Shows distance to the pursuing kill zone (player-driven mode). Hidden when not applicable.")]
+    public TextMeshProUGUI killZoneDistanceText;
     
     [Header("Game Over Screen")]
     public GameObject gameOverPanel;
@@ -28,6 +30,7 @@ public class UIManager : MonoBehaviour
     [Header("Settings")]
     public string distanceFormat = "{0:F0}m";
     public string speedFormat = "{0:F1} u/s";
+    public string killZoneDistanceFormat = "Wall: {0:F1}m";
     
     private float elapsedTime;
     
@@ -114,6 +117,21 @@ public class UIManager : MonoBehaviour
         if (speedText != null)
         {
             speedText.text = string.Format(speedFormat, GameManager.Instance.CurrentSpeed);
+        }
+        
+        // Kill Zone Distance (player-driven mode only)
+        if (killZoneDistanceText != null)
+        {
+            float kzDist = GameManager.Instance.KillZoneDistance;
+            if (kzDist >= 0f)
+            {
+                killZoneDistanceText.gameObject.SetActive(true);
+                killZoneDistanceText.text = string.Format(killZoneDistanceFormat, kzDist);
+            }
+            else
+            {
+                killZoneDistanceText.gameObject.SetActive(false);
+            }
         }
         
         // Timer
