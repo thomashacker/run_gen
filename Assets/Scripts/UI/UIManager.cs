@@ -13,6 +13,9 @@ public class UIManager : MonoBehaviour
     [Header("HUD - Während des Spiels")]
     public GameObject hudPanel;
     public TextMeshProUGUI distanceText;
+    public TextMeshProUGUI speedText;
+    public TextMeshProUGUI killZoneDistanceText;
+    public TextMeshProUGUI speedBoostText;
     
     [Header("Game Over Screen")]
     public GameObject gameOverPanel;
@@ -24,6 +27,11 @@ public class UIManager : MonoBehaviour
     
     [Header("Settings")]
     public string distanceFormat = "{0:F0}m";
+    public string speedFormat = "{0:F1} u/s";
+    public string killZoneDistanceFormat = "{0:F1}m";
+    public string speedBoostFormat = "Boost: {0:P0}";
+    
+    private PlayerManager cachedPlayer;
     
     void Awake()
     {
@@ -102,6 +110,27 @@ public class UIManager : MonoBehaviour
         if (distanceText != null)
         {
             distanceText.text = string.Format(distanceFormat, GameManager.Instance.Distance);
+        }
+        
+        // Speed
+        if (speedText != null)
+        {
+            speedText.text = string.Format(speedFormat, GameManager.Instance.PlayerSpeed);
+        }
+        
+        // Kill Zone Distance
+        if (killZoneDistanceText != null)
+        {
+            killZoneDistanceText.text = string.Format(killZoneDistanceFormat, GameManager.Instance.KillZoneDistance);
+        }
+        
+        // Speed Boost Ratio
+        if (speedBoostText != null)
+        {
+            if (cachedPlayer == null)
+                cachedPlayer = FindAnyObjectByType<PlayerManager>();
+            if (cachedPlayer != null)
+                speedBoostText.text = string.Format(speedBoostFormat, cachedPlayer.SpeedBoostRatio);
         }
     }
     

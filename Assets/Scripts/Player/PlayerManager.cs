@@ -33,7 +33,8 @@ public class PlayerManager : MonoBehaviour
 
     [Header("Air Control (AddForce)")]
     public float airAcceleration = 20f;
-    public float airDeceleration = 20f;
+    [Tooltip("Air deceleration when releasing input. Lower = more momentum preservation in air.")]
+    public float airDeceleration = 10f;
 
     [Header("Wall Jump")]
     [Tooltip("Aktiviert Wall Jump")]
@@ -61,6 +62,18 @@ public class PlayerManager : MonoBehaviour
     public LayerMask platformLayer;
     [Tooltip("Time in seconds to ignore platform collision after pressing drop (so player clears the platform)")]
     public float dropThroughIgnoreTime = 0.5f;
+    
+    [Header("Dynamic Speed System")]
+    [Tooltip("How fast currentMaxSpeed builds per second while on a platform (units/sec). Stay longer = faster.")]
+    public float platformSpeedBuildRate = 2f;
+    [Tooltip("Speed bump added to currentMaxSpeed per jump. Stacks with platform buildup.")]
+    public float jumpSpeedBoost = 0.5f;
+    [Tooltip("Maximum speed as a multiple of base moveSpeed (2 = 2x base speed). Caps all bonus sources.")]
+    public float maxSpeedMultiplier = 2f;
+    [Tooltip("How fast currentMaxSpeed decays back to moveSpeed on ground (units/sec). Higher = faster drain.")]
+    public float bonusSpeedDecayGround = 5f;
+    [Tooltip("How fast currentMaxSpeed decays back to moveSpeed in air (units/sec). Lower = more momentum preservation.")]
+    public float bonusSpeedDecayAir = 1.5f;
 
     [Header("Ground Check")]
     public LayerMask groundLayer;
@@ -95,6 +108,7 @@ public class PlayerManager : MonoBehaviour
     private Rigidbody2D rb;
     private Collider2D playerCollider;
     private bool isGrounded;
+    private bool isOnPlatform;
     private bool isTouchingWallLeft;
     private bool isTouchingWallRight;
     private bool isDead;
@@ -113,10 +127,28 @@ public class PlayerManager : MonoBehaviour
     private bool isWallSliding;
     private float dropThroughIgnoreTimeLeft;
     private Collider2D ignoredPlatformCollider;
+    
+    // Dynamic Max Speed State
+    private float currentMaxSpeed;
 
     public bool IsGrounded => isGrounded;
+    public bool IsOnPlatform => isOnPlatform;
     public bool IsWallSliding => isWallSliding;
     public bool IsTouchingWall => isTouchingWallLeft || isTouchingWallRight;
+    public float CurrentMaxSpeed => currentMaxSpeed;
+    
+    /// <summary>
+    /// 0 = base speed, 1 = full bonus (at speed cap). Useful for UI/debug.
+    /// </summary>
+    public float SpeedBoostRatio
+    {
+        get
+        {
+            float range = moveSpeed * maxSpeedMultiplier - moveSpeed;
+            if (range <= 0f) return 0f;
+            return Mathf.Clamp01((currentMaxSpeed - moveSpeed) / range);
+        }
+    }
 
     void Awake()
     {
@@ -128,6 +160,9 @@ public class PlayerManager : MonoBehaviour
         
         // Hearts initialisieren
         CurrentHearts = maxHearts;
+        
+        // Dynamic speed starts at base
+        currentMaxSpeed = moveSpeed;
     }
 
     void Update()
@@ -217,6 +252,10 @@ public class PlayerManager : MonoBehaviour
         );
         
         isGrounded = hit.collider != null;
+        
+        // Check if standing specifically on a platform layer
+        isOnPlatform = isGrounded && hit.collider != null &&
+            ((1 << hit.collider.gameObject.layer) & platformLayer) != 0;
     }
 
     /// <summary>
@@ -318,21 +357,47 @@ public class PlayerManager : MonoBehaviour
 
     void HandleMovement()
     {
+        float dt = Time.fixedDeltaTime;
+        float speedCap = moveSpeed * maxSpeedMultiplier;
+        
+        // --- Update currentMaxSpeed ---
+        bool hasInput = Mathf.Abs(horizontalInput) > 0.01f;
+        
+        if (!hasInput)
+        {
+            // No input: always decay toward base, regardless of surface
+            currentMaxSpeed = Mathf.MoveTowards(currentMaxSpeed, moveSpeed, bonusSpeedDecayGround * dt);
+        }
+        else if (isOnPlatform)
+        {
+            // On platform + moving: build speed toward cap
+            currentMaxSpeed = Mathf.MoveTowards(currentMaxSpeed, speedCap, platformSpeedBuildRate * dt);
+        }
+        else if (!isGrounded)
+        {
+            // In air + moving: barely decay — preserve momentum
+            currentMaxSpeed = Mathf.MoveTowards(currentMaxSpeed, moveSpeed, bonusSpeedDecayAir * dt);
+        }
+        else
+        {
+            // On ground (not platform) + moving: decay toward base
+            currentMaxSpeed = Mathf.MoveTowards(currentMaxSpeed, moveSpeed, bonusSpeedDecayGround * dt);
+        }
+        
         // Input modifizieren wenn Wall Jump Input Lock aktiv
         float effectiveInput = horizontalInput;
         if (wallJumpInputLockTimeLeft > 0f)
         {
-            // Input in Richtung der letzten Wand reduzieren
-            // Erlaubt aber Input weg von der Wand
             float lockStrength = wallJumpInputLockTimeLeft / wallJumpInputLockTime;
             if ((lastWallDirection < 0 && horizontalInput < 0) ||
                 (lastWallDirection > 0 && horizontalInput > 0))
             {
-                effectiveInput *= (1f - lockStrength * 0.8f); // 80% reduziert
+                effectiveInput *= (1f - lockStrength * 0.8f);
             }
         }
         
-        float targetSpeed = effectiveInput * moveSpeed;
+        // Target speed uses the dynamic currentMaxSpeed
+        float targetSpeed = effectiveInput * currentMaxSpeed;
         float vx = rb.linearVelocity.x;
 
         if (isGrounded)
@@ -346,6 +411,7 @@ public class PlayerManager : MonoBehaviour
             else if (effectiveInput < 0 && isTouchingWallLeft) targetSpeed = vx;
         }
 
+        // Standard acceleration/deceleration — no special branches
         float accelRate = isGrounded
             ? (Mathf.Abs(targetSpeed) > 0.01f ? acceleration : deceleration)
             : (Mathf.Abs(targetSpeed) > 0.01f ? airAcceleration : airDeceleration);
@@ -356,11 +422,18 @@ public class PlayerManager : MonoBehaviour
         float speedDif = targetSpeed - vx;
         float movement = speedDif * accelRate;
 
-        // Optional: Überkorrektur verhindern (wie bei Dawnosaur Slide)
-        float maxMove = Mathf.Abs(speedDif) * rb.mass / Time.fixedDeltaTime;
+        // Überkorrektur verhindern (Dawnosaur-style)
+        float maxMove = Mathf.Abs(speedDif) * rb.mass / dt;
         movement = Mathf.Clamp(movement, -maxMove, maxMove);
 
         rb.AddForce(movement * Vector2.right, ForceMode2D.Force);
+        
+        // Hard cap on velocity
+        float absVx = Mathf.Abs(rb.linearVelocity.x);
+        if (absVx > speedCap)
+        {
+            rb.linearVelocity = new Vector2(Mathf.Sign(rb.linearVelocity.x) * speedCap, rb.linearVelocity.y);
+        }
     }
 
     void HandleJumpInput()
@@ -371,9 +444,24 @@ public class PlayerManager : MonoBehaviour
         jumpBufferTimeLeft = 0f;
         coyoteTimeLeft = 0f;
 
-        // Velocity direkt setzen (kein AddForce) → immer v.y = jumpForce, sonst wird bei Fall zu hoch
+        // Velocity direkt setzen (kein AddForce) → immer v.y = jumpForce
         Vector2 v = rb.linearVelocity;
         v.y = jumpForce;
+        
+        // Bunny Hop: bump currentMaxSpeed (so the force system targets the higher speed)
+        // + small velocity kick for instant feel
+        if (jumpSpeedBoost > 0f && Mathf.Abs(horizontalInput) > 0.01f)
+        {
+            float speedCap = moveSpeed * maxSpeedMultiplier;
+            currentMaxSpeed = Mathf.Min(currentMaxSpeed + jumpSpeedBoost, speedCap);
+            
+            // Small instant velocity kick (capped)
+            float remainingBudget = speedCap - Mathf.Abs(v.x);
+            float kick = Mathf.Min(jumpSpeedBoost, Mathf.Max(remainingBudget, 0f));
+            if (kick > 0f)
+                v.x += Mathf.Sign(horizontalInput) * kick;
+        }
+        
         rb.linearVelocity = v;
         isRising = true;
     }

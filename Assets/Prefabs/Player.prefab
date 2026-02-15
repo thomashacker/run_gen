@@ -219,9 +219,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aad9eee349f560342a7dd02f1879ee26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 6
-  acceleration: 5
-  deceleration: 12
+  moveSpeed: 5
+  acceleration: 15
+  deceleration: 25
   jumpForce: 7
   gravityRiseHold: 0.8
   gravityFall: 2.3
@@ -233,11 +233,11 @@ MonoBehaviour:
   jumpHangGravityMult: 0.5
   jumpHangAccelMult: 1.2
   fastFallGravityMult: 1.4
-  airAcceleration: 5
-  airDeceleration: 5
+  airAcceleration: 10
+  airDeceleration: 10
   enableWallJump: 1
   wallJumpForceY: 8
-  wallJumpForceX: 1.8
+  wallJumpForceX: 2
   wallJumpInputLockTime: 0.3
   wallCoyoteTime: 0.1
   enableWallSlide: 1
@@ -248,6 +248,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   dropThroughIgnoreTime: 0.3
+  platformSpeedBuildRate: 1.7
+  jumpSpeedBoost: 0.8
+  maxSpeedMultiplier: 3
+  bonusSpeedDecayGround: 3
+  bonusSpeedDecayAir: 0.75
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -259,7 +264,7 @@ MonoBehaviour:
   groundCheck: {fileID: 5497585448126900847}
   wallCheckDistance: 0.15
   maxHearts: 3
-  invincibilityDuration: 1
+  invincibilityDuration: 0.5
 --- !u!70 &8180909762023815991
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

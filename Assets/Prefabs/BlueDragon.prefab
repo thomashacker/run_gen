@@ -88,10 +88,10 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  aimDuration: 1
-  attackCooldown: 1
+  aimDuration: 1.2
+  attackCooldown: 1.2
   projectilePrefab: {fileID: 4258290473324394188, guid: f48800cc097d24343990f75bc9dc769f, type: 3}
-  projectileSpeed: 8
+  projectileSpeed: 7
   firePoint: {fileID: 2920225014888216804}
   projectilesPerSalve: 3
   salveDelay: 0.3

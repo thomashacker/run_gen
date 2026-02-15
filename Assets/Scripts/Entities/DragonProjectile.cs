@@ -90,11 +90,11 @@ public class DragonProjectile : MonoBehaviour
 
         bool isGround = ((1 << objLayer) & groundLayer) != 0;
         bool isPlayer = ((1 << objLayer) & playerLayer) != 0;
-        bool isPlatform = ((1 << objLayer) & platformLayer) != 0;
         bool isProjectile = ((1 << objLayer) & projectileLayer) != 0;
         bool isOtherDragonProjectile = obj.GetComponent<DragonProjectile>() != null;
 
-        return isGround || isPlayer || isPlatform || isProjectile || isOtherDragonProjectile;
+        // Platforms are intentionally ignored — projectiles pass through them
+        return isGround || isPlayer || isProjectile || isOtherDragonProjectile;
     }
     
     void HandleHit(Vector2 hitPoint)

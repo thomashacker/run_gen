@@ -19,10 +19,18 @@ public class GameManager : MonoBehaviour
     public float Distance { get; private set; } = 0f;
     public float HighScore { get; private set; } = 0f;
     
+    // Speed (units per second)
+    public float PlayerSpeed { get; private set; } = 0f;
+    
+    // Distance between player and kill zone
+    public float KillZoneDistance { get; private set; } = 0f;
+    
     [Header("References")]
     public Transform player;
+    public GameObject killZone;
     
     private float playerStartX;
+    private Vector3 previousPlayerPosition;
     
     void Awake()
     {
@@ -57,6 +65,7 @@ public class GameManager : MonoBehaviour
         if (player != null)
         {
             playerStartX = player.position.x;
+            previousPlayerPosition = player.position;
         }
     }
     
@@ -67,6 +76,16 @@ public class GameManager : MonoBehaviour
         {
             float dist = player.position.x - playerStartX;
             Distance = Mathf.Max(Distance, dist); // Nur vorwärts zählen
+            
+            // Speed berechnen (units per second)
+            PlayerSpeed = Vector3.Distance(player.position, previousPlayerPosition) / Time.deltaTime;
+            previousPlayerPosition = player.position;
+            
+            // Kill Zone Distance berechnen
+            if (killZone != null)
+            {
+                KillZoneDistance = Vector3.Distance(player.position, killZone.transform.position);
+            }
         }
     }
     

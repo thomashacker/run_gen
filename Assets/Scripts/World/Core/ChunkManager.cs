@@ -219,6 +219,10 @@ namespace WorldGeneration
                 if (pass != null && pass.Enabled)
                 {
                     chunk = pass.Execute(chunk, context);
+                    
+                    // Keep metadata in sync after every pass so subsequent
+                    // passes always see accurate surface heights.
+                    chunk.RefreshSurfaceHeights();
                 }
             }
             

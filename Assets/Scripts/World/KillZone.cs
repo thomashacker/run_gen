@@ -19,19 +19,25 @@ public class KillZone : MonoBehaviour
     [Header("Left Chase Settings")]
     public float startDelay = 5f;            // Sekunden bevor die Zone anfängt sich zu bewegen
     public float startSpeed = 2f;            // Anfangsgeschwindigkeit
-    public float acceleration = 0.5f;        // Beschleunigung pro Sekunde (keine Max-Geschwindigkeit!)
+    [Tooltip("Speed factor relative to player max speed. 0.1 = 10% faster, -0.1 = 10% slower. Final max speed = playerSpeed * (1 + factor)")]
+    public float speedFactor = 0.1f;
+    [Tooltip("How fast the kill zone accelerates toward its max speed (units/sec²). Lower = slower ramp-up.")]
+    public float accelerationRate = 0.5f;
     
     [Header("References")]
     public Transform player;
     
     // Public Properties
     public float CurrentSpeed => currentSpeed;
+    public float MaxSpeed => maxSpeed;
     public bool IsChasing => isChasing;
     
     private BoxCollider2D boxCollider;
+    private PlayerManager playerManager;
     private float initialX;
     private float initialY;
     private float currentSpeed;
+    private float maxSpeed;
     private bool isChasing = false;
     private float delayTimer;
     
@@ -55,11 +61,17 @@ public class KillZone : MonoBehaviour
             if (pm != null)
             {
                 player = pm.transform;
+                playerManager = pm;
             }
+        }
+        else
+        {
+            playerManager = player.GetComponent<PlayerManager>();
         }
         
         // Initialisierung
         currentSpeed = startSpeed;
+        maxSpeed = CalculateMaxSpeed();
         delayTimer = startDelay;
     }
     
@@ -113,14 +125,28 @@ public class KillZone : MonoBehaviour
         
         // === CHASE MODE ===
         
-        // Beschleunigen (keine Obergrenze!)
-        currentSpeed += acceleration * Time.deltaTime;
+        // Recalculate max speed each frame so Inspector changes + platform boost are reflected live
+        maxSpeed = CalculateMaxSpeed();
+        
+        // Accelerate toward max speed
+        currentSpeed = Mathf.MoveTowards(currentSpeed, maxSpeed, accelerationRate * Time.deltaTime);
         
         // Nach rechts bewegen
         pos.x += currentSpeed * Time.deltaTime;
         
         // Y folgt dem Spieler
         pos.y = player.position.y;
+    }
+    
+    /// <summary>
+    /// Calculates the kill zone's target max speed based on the player's moveSpeed.
+    /// maxSpeed = playerMoveSpeed * (1 + speedFactor)
+    /// </summary>
+    float CalculateMaxSpeed()
+    {
+        if (playerManager == null) return startSpeed;
+        float playerMaxSpeed = playerManager.moveSpeed;
+        return playerMaxSpeed + playerMaxSpeed * speedFactor;
     }
     
     void OnTriggerEnter2D(Collider2D other)

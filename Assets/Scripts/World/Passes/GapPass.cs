@@ -131,22 +131,38 @@ namespace WorldGeneration
         /// Pass 2: Places background tiles in a gap span, capped by the
         /// min surface height of the left and right neighbors so the
         /// background never sticks out above the adjacent ground.
+        /// Scans the actual tile matrix for neighbor heights instead of
+        /// relying on metadata, so it works regardless of earlier passes.
         /// </summary>
         void FillGapBackground(ChunkData chunk, GapSpan span)
         {
-            // Get neighbor surface heights (columns just outside the gap)
+            // Get neighbor surface heights by scanning the real tile matrix
+            // (not metadata, which may be stale within the same pass).
             int leftNeighborX = span.startX - 1;
             int rightNeighborX = span.endX + 1;
             
             int leftHeight = leftNeighborX >= 0
-                ? ChunkUtilities.GetGroundHeight(chunk, leftNeighborX, -1)
-                : int.MaxValue;
+                ? chunk.GetSurfaceHeight(leftNeighborX)
+                : -1;
             int rightHeight = rightNeighborX < chunk.width
-                ? ChunkUtilities.GetGroundHeight(chunk, rightNeighborX, -1)
-                : int.MaxValue;
+                ? chunk.GetSurfaceHeight(rightNeighborX)
+                : -1;
             
-            // Cap = min of both neighbors + offset
-            int bgCap = Mathf.Min(leftHeight, rightHeight) + backgroundYOffset;
+            // If one side is out of bounds or has no ground, use the other side.
+            // If both are missing, skip background entirely.
+            int minHeight;
+            if (leftHeight >= 0 && rightHeight >= 0)
+                minHeight = Mathf.Min(leftHeight, rightHeight);
+            else if (leftHeight >= 0)
+                minHeight = leftHeight;
+            else if (rightHeight >= 0)
+                minHeight = rightHeight;
+            else
+                return;
+            
+            // Cap = min neighbor height + offset
+            int bgCap = minHeight + backgroundYOffset;
+            if (bgCap < gapBottomOffset) return;
             
             var bgData = new TileData
             {
@@ -155,16 +171,13 @@ namespace WorldGeneration
                 backgroundType = backgroundType
             };
             
+            // Gap columns are already cleared — just fill from bottom to cap.
             int bottomY = gapBottomOffset;
             for (int x = span.startX; x <= span.endX; x++)
             {
-                int surfaceHeight = ChunkUtilities.GetGroundHeight(chunk, x, -1);
-                int topY = surfaceHeight >= 0 ? surfaceHeight : 0;
-                
-                for (int y = bottomY; y <= topY; y++)
+                for (int y = bottomY; y <= bgCap; y++)
                 {
-                    if (y <= bgCap)
-                        chunk.SetBackgroundTile(x, y, bgData);
+                    chunk.SetBackgroundTile(x, y, bgData);
                 }
             }
         }

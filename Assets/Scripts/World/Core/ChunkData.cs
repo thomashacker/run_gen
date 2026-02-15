@@ -141,6 +141,30 @@ namespace WorldGeneration
         }
         
         /// <summary>
+        /// Rebuilds metadata.surfaceHeights from the actual tile matrix.
+        /// Call after any pass that modifies ground tiles so that subsequent
+        /// passes (and utility methods like GetGroundHeight) see accurate data.
+        /// Also updates leftEdgeHeight / rightEdgeHeight.
+        /// </summary>
+        public void RefreshSurfaceHeights()
+        {
+            if (metadata.surfaceHeights == null || metadata.surfaceHeights.Length != width)
+                metadata.surfaceHeights = new int[width];
+            
+            for (int x = 0; x < width; x++)
+            {
+                metadata.surfaceHeights[x] = GetSurfaceHeight(x);
+            }
+            
+            // Keep edge heights in sync
+            if (width > 0)
+            {
+                metadata.leftEdgeHeight = metadata.surfaceHeights[0];
+                metadata.rightEdgeHeight = metadata.surfaceHeights[width - 1];
+            }
+        }
+        
+        /// <summary>
         /// Konvertiert lokale Chunk-Koordinaten zu World-X.
         /// </summary>
         public int LocalToWorldX(int localX)

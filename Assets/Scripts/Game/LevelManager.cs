@@ -13,6 +13,7 @@ public class LevelManager : MonoBehaviour
     [Header("Level Settings")]
     [Tooltip("XP benötigt für Level 1 (verdoppelt sich pro Level)")]
     public int baseXpRequired = 5;
+    public float growthFactor = 1.5f;
     
     [Header("PowerUps")]
     [Tooltip("Alle verfügbaren PowerUps (ScriptableObjects)")]
@@ -77,7 +78,10 @@ public class LevelManager : MonoBehaviour
     public int CalculateXpForLevel(int level)
     {
         if (level <= 0) return 0;
-        return baseXpRequired * (1 << (level - 1)); // 2^(level-1) * baseXp
+
+        return Mathf.RoundToInt(
+            baseXpRequired * Mathf.Pow(growthFactor, level - 1)
+        );
     }
     
     /// <summary>
