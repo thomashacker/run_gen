@@ -101,7 +101,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   spriteRenderer: {fileID: 202938877688793678}
-  deathDropPrefab: {fileID: 7364691822147532462, guid: 977f9af1e9c36604581161fcb6bb9efc, type: 3}
+  deathDropPrefab: {fileID: 7364691822147532462, guid: f74f593d718d58f4f830723b0c3445ac, type: 3}
   deathDropOffset: {x: 0, y: 0, z: 0}
   deathEffectPrefab: {fileID: 0}
   deathAnimationDuration: 0.5

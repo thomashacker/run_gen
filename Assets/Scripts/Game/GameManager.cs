@@ -77,13 +77,13 @@ public class GameManager : MonoBehaviour
             float dist = player.position.x - playerStartX;
             Distance = Mathf.Max(Distance, dist); // Nur vorwärts zählen
             
-            // Speed berechnen (units per second)
-            PlayerSpeed = Vector3.Distance(player.position, previousPlayerPosition) / Time.deltaTime;
+            // Speed nur auf der X-Achse (units per second)
+            PlayerSpeed = (player.position.x - previousPlayerPosition.x) / Time.deltaTime;
             previousPlayerPosition = player.position;
             
             // Kill Zone Distance berechnen
             if (killZone != null)
-            {
+            { 
                 KillZoneDistance = Vector3.Distance(player.position, killZone.transform.position);
             }
         }
