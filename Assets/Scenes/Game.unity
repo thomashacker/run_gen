@@ -1751,7 +1751,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &614790585
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5233,6 +5233,82 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: looping
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: ShapeModule.type
+      value: 18
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: ShapeModule.angle
+      value: 19.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: CollisionModule.enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: ShapeModule.radius.mode
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: VelocityModule.y.scalar
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: ShapeModule.radius.value
+      value: 0.54
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: InitialModule.gravitySource
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: ShapeModule.radiusThickness
+      value: 0.56
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: VelocityModule.radial.scalar
+      value: 3.16
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: InheritVelocityModule.enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: VelocityModule.orbitalY.scalar
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: InitialModule.startSpeed.scalar
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: InitialModule.startLifetime.scalar
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key1.a
+      value: 0.44705883
+      objectReference: {fileID: 0}
+    - target: {fileID: 1628588455493365533, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: EmissionModule.m_Bursts.Array.data[0].countCurve.scalar
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 3648755656066615152, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: m_SortingLayer
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3648755656066615152, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: m_SortingLayerID
+      value: -511222609
+      objectReference: {fileID: 0}
     - target: {fileID: 5088844245669577972, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
       propertyPath: m_Name
       value: Player
@@ -5276,6 +5352,10 @@ PrefabInstance:
     - target: {fileID: 5322816068076853802, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5667027026307726877, guid: fd6640f5c7fec4547ac166d454d504a6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.605
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

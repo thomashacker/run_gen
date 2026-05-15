@@ -54,6 +54,18 @@ public class PlayerManager : MonoBehaviour
     [Tooltip("Maximale Fallgeschwindigkeit an der Wand")]
     public float wallSlideMaxSpeed = 3f;
 
+    [Header("Ledge Assist")]
+    [Tooltip("Aktiviert Auto-Climb wenn Space gehalten wird und der Spieler in einer Platform feststeckt")]
+    public bool enableLedgeAssist = true;
+    [Tooltip("Nur lift wenn vy unter diesem Wert (0 = nur am Scheitel/Fallen, höher = aggressiver)")]
+    public float ledgeAssistMaxVy = 1f;
+    [Tooltip("Maximale Höhe (Units) die der Spieler hochgelifted werden kann")]
+    public float ledgeAssistMaxLift = 1.5f;
+    [Tooltip("Vertikaler Boost direkt nach dem Lift")]
+    public float ledgeAssistBoost = 6f;
+    [Tooltip("Cooldown nach Trigger, verhindert Mehrfach-Trigger durch benachbarte Plattformen")]
+    public float ledgeAssistCooldown = 0.25f;
+
     [Header("Drop Through Platforms")]
     [Tooltip("Allow dropping through one-way platforms (Platform Effector 2D) with S or Down")]
     public bool enableDropThrough = true;
@@ -97,6 +109,7 @@ public class PlayerManager : MonoBehaviour
     public event Action<int, int> OnHeartsChanged; // (currentHearts, maxHearts)
     public event Action OnDamaged;
     public event Action OnHealed;
+    public event Action OnJumped;
     
     // Heart Properties
     public int CurrentHearts { get; private set; }
@@ -119,6 +132,7 @@ public class PlayerManager : MonoBehaviour
     private float jumpBufferTimeLeft;
     private bool isRising;           // true nach Sprung bis vy <= 0
     private bool jumpCutThisFrame;   // Space losgelassen während vy > 0
+    private bool jumpConsumed;       // true nach Sprung, blockiert Re-Jump bis Space losgelassen wurde
     
     // Wall Jump State
     private float wallCoyoteTimeLeft;
@@ -127,6 +141,7 @@ public class PlayerManager : MonoBehaviour
     private bool isWallSliding;
     private float dropThroughIgnoreTimeLeft;
     private Collider2D ignoredPlatformCollider;
+    private float ledgeAssistCooldownLeft;
     
     // Dynamic Max Speed State
     private float currentMaxSpeed;
@@ -171,11 +186,14 @@ public class PlayerManager : MonoBehaviour
         jumpHeld = Input.GetKey(KeyCode.Space);
 
         jumpBufferTimeLeft -= Time.deltaTime;
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && !jumpConsumed)
             jumpBufferTimeLeft = jumpBufferTime;
 
         if (Input.GetKeyUp(KeyCode.Space))
+        {
             jumpCutThisFrame = true;
+            jumpConsumed = false;
+        }
 
         // Drop through platforms (S or Down): ignore the specific platform collider we're standing on (Platform Effector 2D)
         if (enableDropThrough && dropThroughIgnoreTimeLeft <= 0f &&
@@ -225,6 +243,7 @@ public class PlayerManager : MonoBehaviour
 
         HandleJumpInput();
         HandleWallJump();
+        HandleLedgeAssist();
         HandleMovement();
         HandleWallSlide();
         HandleGravity();
@@ -333,6 +352,7 @@ public class PlayerManager : MonoBehaviour
         // Wall Jump ausführen!
         jumpBufferTimeLeft = 0f;
         wallCoyoteTimeLeft = 0f;
+        jumpConsumed = true;
         
         // Kraft weg von der Wand + nach oben
         Vector2 jumpVelocity = new Vector2(-wallDir * wallJumpForceX, wallJumpForceY);
@@ -340,8 +360,9 @@ public class PlayerManager : MonoBehaviour
         
         // Input Lock aktivieren (verhindert sofortiges Zurück zur Wand)
         wallJumpInputLockTimeLeft = wallJumpInputLockTime;
-        
+
         isRising = true;
+        OnJumped?.Invoke();
     }
     
     void HandleWallSlide()
@@ -443,6 +464,7 @@ public class PlayerManager : MonoBehaviour
 
         jumpBufferTimeLeft = 0f;
         coyoteTimeLeft = 0f;
+        jumpConsumed = true;
 
         // Velocity direkt setzen (kein AddForce) → immer v.y = jumpForce
         Vector2 v = rb.linearVelocity;
@@ -464,6 +486,51 @@ public class PlayerManager : MonoBehaviour
         
         rb.linearVelocity = v;
         isRising = true;
+        OnJumped?.Invoke();
+    }
+
+    void HandleLedgeAssist()
+    {
+        if (ledgeAssistCooldownLeft > 0f)
+            ledgeAssistCooldownLeft -= Time.fixedDeltaTime;
+
+        if (!enableLedgeAssist) return;
+        if (ledgeAssistCooldownLeft > 0f) return;
+        if (!jumpHeld) return;
+        if (isGrounded) return;
+        if (rb.linearVelocity.y > ledgeAssistMaxVy) return;
+
+        // Suche überlappende Platformen
+        Bounds pb = playerCollider.bounds;
+        Collider2D[] hits = Physics2D.OverlapBoxAll(pb.center, pb.size, 0f, platformLayer);
+        if (hits == null || hits.Length == 0) return;
+
+        // Höchste erreichbare Plattform-Oberkante finden
+        float playerFeet = pb.min.y;
+        float bestTop = float.NegativeInfinity;
+        for (int i = 0; i < hits.Length; i++)
+        {
+            float top = hits[i].bounds.max.y;
+            if (top <= playerFeet) continue;                       // Oberkante muss über Füßen sein
+            if (top - playerFeet > ledgeAssistMaxLift) continue;   // Lift-Höhe begrenzen
+            if (top > bestTop) bestTop = top;
+        }
+        if (bestTop == float.NegativeInfinity) return;
+
+        // Position hochsetzen, sodass Füße knapp über der Plattform stehen
+        float delta = (bestTop + 0.02f) - playerFeet;
+        transform.position += Vector3.up * delta;
+
+        // Kleiner vertikaler Boost
+        Vector2 v = rb.linearVelocity;
+        v.y = ledgeAssistBoost;
+        rb.linearVelocity = v;
+
+        isRising = true;
+        ledgeAssistCooldownLeft = ledgeAssistCooldown;
+
+        // Re-uses jump particles + squash punch
+        OnJumped?.Invoke();
     }
 
     void HandleGravity()

@@ -137,8 +137,8 @@ public class PlayerAnimator : MonoBehaviour
         {
             return wallAnim;
         }
-        
-        // Priorität 3: In der Luft
+
+        // Priorität 4: In der Luft
         if (!player.IsGrounded)
         {
             float vy = rb != null ? rb.linearVelocity.y : 0f;
@@ -155,7 +155,7 @@ public class PlayerAnimator : MonoBehaviour
             }
         }
         
-        // Priorität 4: Am Boden
+        // Priorität 5: Am Boden
         float vx = rb != null ? Mathf.Abs(rb.linearVelocity.x) : 0f;
         
         // Laufend
